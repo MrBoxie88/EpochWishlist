@@ -2004,39 +2004,14 @@ local function CreateMainFrame()
     }
 
     -- ── Classify zones from EW_DROP_DATA ──────────────────────
-    local EW_DUNGEON_ZONES = {
-        ["The Deadmines"]=true, ["Wailing Caverns"]=true,
-        ["Shadowfang Keep"]=true, ["Blackfathom Deeps"]=true,
-        ["The Stockade"]=true, ["Gnomeregan"]=true,
-        ["Razorfen Kraul"]=true, ["Razorfen Downs"]=true,
-        ["SM Graveyard"]=true, ["SM Library"]=true,
-        ["SM Armory"]=true, ["SM Cathedral"]=true,
-        ["Uldaman"]=true, ["Zul'Farrak"]=true,
-        ["Maraudon"]=true, ["Sunken Temple"]=true,
-        ["Blackrock Depths"]=true, ["LBRS"]=true, ["UBRS"]=true,
-        ["DM East"]=true, ["DM West"]=true, ["DM North"]=true,
-        ["Stratholme"]=true, ["Scholomance"]=true,
-        ["Glittermurk Mines"]=true, ["Baradin Hold"]=true,
-        ["Ragefire Chasm"]=true,
-    }
-
+    -- Zone classification is driven by EW_ZONE_TYPE populated in EpochWishlist_Items.lua.
+    -- No lists to maintain here — just add the third arg to zone() calls in Items.lua.
     local EW_BROWSE_DATA = {}  -- [zone][boss] = {itemId,...}
     local EW_BOSS_ORDER  = {}  -- [zone] = {boss,...} sorted
     local EW_RAID_ZONES  = {}
     local EW_DUNG_ZONES  = {}
     local EW_SET_ZONES   = {}  -- sets & collections
     local _zoneSet       = {}
-
-    -- Zones that are sets/collections (not raid/dungeon content)
-    local EW_COLLECTION_ZONES = {
-        ["Tier 0"]          = true,
-        ["Tier 0.5"]        = true,
-        ["Tier 1"]          = true,
-        ["BoE World Drops"] = true,
-        ["Rune Warder Set"] = true,
-        ["Fang Set"]        = true,
-        ["Uldic Set"]       = true,
-    }
 
     for itemId, info in pairs(EW_DROP_DATA) do
         if info and info.source then
@@ -2048,9 +2023,10 @@ local function CreateMainFrame()
                 EW_BOSS_ORDER[zone]  = {}
                 if not _zoneSet[zone] then
                     _zoneSet[zone] = true
-                    if EW_COLLECTION_ZONES[zone] then
+                    local ztype = EW_ZONE_TYPE and EW_ZONE_TYPE[zone] or "raid"
+                    if ztype == "set" then
                         EW_SET_ZONES[#EW_SET_ZONES+1] = zone
-                    elseif EW_DUNGEON_ZONES[zone] then
+                    elseif ztype == "dungeon" then
                         EW_DUNG_ZONES[#EW_DUNG_ZONES+1] = zone
                     else
                         EW_RAID_ZONES[#EW_RAID_ZONES+1] = zone
@@ -2066,7 +2042,7 @@ local function CreateMainFrame()
     end
     table.sort(EW_RAID_ZONES)
     table.sort(EW_DUNG_ZONES)
-    -- Keep sets in definition order (T0, T0.5, T1, BoE)
+    -- Keep sets in definition order as written in Items.lua
     for _, zone in ipairs(EW_RAID_ZONES) do
         table.sort(EW_BOSS_ORDER[zone])
         for _, items in pairs(EW_BROWSE_DATA[zone]) do table.sort(items) end
@@ -2094,14 +2070,244 @@ local function CreateMainFrame()
     leftPane:SetBackdropColor(0.04,0.03,0.02,0.85)
     leftPane:SetBackdropBorderColor(0.35,0.28,0.08,1)
 
-    -- Category dropdown sits at the very top of the left pane
-    local catDD = CreateDropdown(leftPane, LEFT_W - 8)
-    catDD:SetPoint("TOPLEFT", leftPane, "TOPLEFT", 4, -4)
+    -- ── Three category nav buttons at the top of the left pane ──
+    local NAV_H    = 22
+    local NAV_BTNS = {}
+    local navNames = { "Raids", "Dungeons", "Sets" }
+    local ShowSetPicker   -- forward declaration (defined below after setPickerFrame)
+    local setPickerFrame  -- forward declaration
+    local leftSF          -- forward declaration
+    local LoadCategory    -- forward declaration
+    local activeCells     -- forward declaration
+    local ReleaseCell     -- forward declaration
+    local bossHeader      -- forward declaration
+    local bossSubHeader   -- forward declaration
+    local gridContent     -- forward declaration
+    local IsInWishlist    -- forward declaration
+    local GetCell         -- forward declaration
+    local LoadBossLoot    -- forward declaration
+    local LoadZoneLoot    -- forward declaration
 
-    -- Scroll frame for zone/boss list below the dropdown
-    local leftSF = CreateFrame("ScrollFrame","EWBrowserLeftScroll",
+    local function MakeNavBtn(label, idx)
+        local btn = CreateFrame("Button", nil, leftPane)
+        btn:SetHeight(NAV_H)
+        btn:SetScript("OnEnter", function(self)
+            if not self._active then
+                self._bg:SetVertexColor(0.20,0.15,0.04,1)
+            end
+        end)
+        btn:SetScript("OnLeave", function(self)
+            if not self._active then
+                self._bg:SetVertexColor(0.10,0.08,0.02,1)
+            end
+        end)
+
+        local bg = btn:CreateTexture(nil,"BACKGROUND")
+        bg:SetAllPoints()
+        bg:SetTexture("Interface\\ChatFrame\\ChatFrameBackground")
+        bg:SetVertexColor(0.10,0.08,0.02,1)
+        btn._bg = bg
+
+        local accent = btn:CreateTexture(nil,"ARTWORK")
+        accent:SetHeight(2)
+        accent:SetPoint("BOTTOMLEFT",  btn,"BOTTOMLEFT",  0,0)
+        accent:SetPoint("BOTTOMRIGHT", btn,"BOTTOMRIGHT", 0,0)
+        accent:SetTexture("Interface\\ChatFrame\\ChatFrameBackground")
+        accent:SetVertexColor(0.55,0.42,0.06,0)
+        btn._accent = accent
+
+        local fs = btn:CreateFontString(nil,"OVERLAY","GameFontNormalSmall")
+        fs:SetAllPoints()
+        fs:SetJustifyH("CENTER")
+        fs:SetText(label)
+        fs:SetTextColor(0.75,0.65,0.35)
+        btn._fs = fs
+
+        btn:SetScript("OnClick", function(self)
+            for _, b in ipairs(NAV_BTNS) do
+                b._active = false
+                b._bg:SetVertexColor(0.10,0.08,0.02,1)
+                b._accent:SetVertexColor(0.55,0.42,0.06,0)
+                b._fs:SetTextColor(0.75,0.65,0.35)
+            end
+            self._active = true
+            self._bg:SetVertexColor(0.18,0.13,0.03,1)
+            self._accent:SetVertexColor(0.85,0.70,0.15,1)
+            self._fs:SetTextColor(1,0.90,0.40)
+
+            if label == "Raids" then
+                setPickerFrame:Hide()
+                leftSF:Show()
+                LoadCategory(EW_RAID_ZONES)
+            elseif label == "Dungeons" then
+                setPickerFrame:Hide()
+                leftSF:Show()
+                LoadCategory(EW_DUNG_ZONES)
+            else  -- Sets
+                leftSF:Hide()
+                setPickerFrame:Show()
+                ShowSetPicker()
+            end
+        end)
+
+        NAV_BTNS[idx] = btn
+        return btn
+    end
+
+    local btnW = math.floor((LEFT_W - 10) / 3)
+    for i, lbl in ipairs(navNames) do
+        local btn = MakeNavBtn(lbl, i)
+        btn:SetWidth(btnW)
+        btn:SetPoint("TOPLEFT", leftPane, "TOPLEFT",
+            4 + (i-1)*(btnW+1), -4)
+    end
+
+    -- thin divider under nav buttons
+    local navDiv = leftPane:CreateTexture(nil,"ARTWORK")
+    navDiv:SetHeight(1)
+    navDiv:SetPoint("TOPLEFT",  leftPane,"TOPLEFT",  4, -(4+NAV_H+2))
+    navDiv:SetPoint("TOPRIGHT", leftPane,"TOPRIGHT", -4,-(4+NAV_H+2))
+    navDiv:SetTexture("Interface\\ChatFrame\\ChatFrameBackground")
+    navDiv:SetVertexColor(0.45,0.35,0.08,0.8)
+
+    -- ── Set picker: icon-button grid replacing the left pane list ─
+    setPickerFrame = CreateFrame("Frame", nil, leftPane)
+    setPickerFrame:SetPoint("TOPLEFT",     leftPane,"TOPLEFT",     4, -(4+NAV_H+4))
+    setPickerFrame:SetPoint("BOTTOMRIGHT", leftPane,"BOTTOMRIGHT",-4,  4)
+    setPickerFrame:Hide()
+
+    -- Category dropdown
+    local SET_DD_H   = 22
+    local setCatDD   = CreateDropdown(setPickerFrame, LEFT_W - 12)
+    setCatDD:SetPoint("TOPLEFT", setPickerFrame, "TOPLEFT", 0, 0)
+
+    local currentSetCat = "Dungeon"
+
+    local function GetSetCategory(zoneName)
+        if zoneName:match("^PvP")       then return "PvP"     end
+        if zoneName:match("^Tier 0%.5") then return "Tier 0.5" end
+        if zoneName:match("^Tier 0")    then return "Tier 0"   end
+        if zoneName:match("^Epoch")     then return "Epoch"    end
+        if zoneName == "World Bosses" or zoneName == "World Epics" then return "World" end
+        return "Dungeon"
+    end
+
+    local catDivTex = setPickerFrame:CreateTexture(nil,"ARTWORK")
+    catDivTex:SetHeight(1)
+    catDivTex:SetPoint("TOPLEFT",  setPickerFrame,"TOPLEFT",  0, -(SET_DD_H+1))
+    catDivTex:SetPoint("TOPRIGHT", setPickerFrame,"TOPRIGHT", 0, -(SET_DD_H+1))
+    catDivTex:SetTexture("Interface\\ChatFrame\\ChatFrameBackground")
+    catDivTex:SetVertexColor(0.45,0.35,0.08,0.8)
+
+    local setPickerSF = CreateFrame("ScrollFrame","EWSetPickerScroll",
+        setPickerFrame,"UIPanelScrollFrameTemplate")
+    setPickerSF:SetPoint("TOPLEFT",     setPickerFrame,"TOPLEFT",      0, -(SET_DD_H+3))
+    setPickerSF:SetPoint("BOTTOMRIGHT", setPickerFrame,"BOTTOMRIGHT", -18, 4)
+
+    local setPickerContent = CreateFrame("Frame", nil, setPickerSF)
+    setPickerContent:SetWidth(LEFT_W - 26)
+    setPickerContent:SetHeight(1)
+    setPickerSF:SetScrollChild(setPickerContent)
+
+    local activeSetBtns = {}
+
+    ShowSetPicker = function()
+        for _, b in ipairs(activeSetBtns) do b:Hide() end
+        wipe(activeSetBtns)
+
+        for _, cell in ipairs(activeCells) do ReleaseCell(cell) end
+        wipe(activeCells)
+        bossHeader:SetText("|cff888888Select a set|r")
+        bossSubHeader:SetText("")
+        gridContent:SetHeight(1)
+
+        local bW = LEFT_W - 32
+        local y  = 0
+
+        for _, zone in ipairs(EW_SET_ZONES) do
+            if GetSetCategory(zone) == currentSetCat then
+                local cZone = zone
+
+                local btn = CreateFrame("Button", nil, setPickerContent)
+                btn:SetSize(bW, 20)
+                btn:SetPoint("TOPLEFT", setPickerContent, "TOPLEFT", 3, -y)
+
+                local hl = btn:CreateTexture(nil,"HIGHLIGHT")
+                hl:SetAllPoints()
+                hl:SetTexture("Interface\\ChatFrame\\ChatFrameBackground")
+                hl:SetVertexColor(0.72,0.56,0.08,0.18)
+
+                local bg = btn:CreateTexture(nil,"BACKGROUND")
+                bg:SetAllPoints()
+                bg:SetTexture("Interface\\ChatFrame\\ChatFrameBackground")
+                bg:SetVertexColor(0.12,0.09,0.03, y%40<20 and 0.7 or 0.45)
+                btn._bg = bg
+
+                local fs = btn:CreateFontString(nil,"OVERLAY","GameFontNormalSmall")
+                fs:SetPoint("LEFT",  btn,"LEFT",  6,0)
+                fs:SetPoint("RIGHT", btn,"RIGHT", -4,0)
+                fs:SetJustifyH("LEFT"); fs:SetWordWrap(false)
+                local displayName = zone
+                    :gsub("^Tier 0%.5 %- ", "")
+                    :gsub("^Tier 0 %- ",    "")
+                    :gsub("^Epoch Sets %- ","")
+                    :gsub("^PvP %- ",       "")
+                fs:SetText(displayName)
+                fs:SetTextColor(0.85,0.78,0.45)
+                btn._fs = fs
+
+                local accent = btn:CreateTexture(nil,"ARTWORK")
+                accent:SetWidth(2)
+                accent:SetPoint("TOPLEFT",    btn,"TOPLEFT",    0,0)
+                accent:SetPoint("BOTTOMLEFT", btn,"BOTTOMLEFT", 0,0)
+                accent:SetTexture("Interface\\ChatFrame\\ChatFrameBackground")
+                accent:SetVertexColor(0.65,0.50,0.10,0)
+                btn._accent = accent
+
+                btn:SetScript("OnClick", function(self)
+                    for _, ob in ipairs(activeSetBtns) do
+                        ob._accent:SetVertexColor(0.65,0.50,0.10,0)
+                        ob._fs:SetTextColor(0.85,0.78,0.45)
+                        ob._bg:SetVertexColor(0.12,0.09,0.03,0.6)
+                    end
+                    self._accent:SetVertexColor(0.90,0.75,0.15,1)
+                    self._fs:SetTextColor(1,0.92,0.40)
+                    self._bg:SetVertexColor(0.22,0.16,0.04,0.9)
+                    LoadZoneLoot(cZone)
+                end)
+
+                activeSetBtns[#activeSetBtns+1] = btn
+                y = y + 21
+            end
+        end
+
+        setPickerContent:SetHeight(math.max(y, 1))
+        setPickerSF:SetVerticalScroll(0)
+    end
+
+    -- Wire up the category dropdown
+    local SET_CATS = { "Dungeon", "Tier 0", "Tier 0.5", "Epoch", "PvP", "World" }
+    setCatDD:SetItems(function()
+        local ddItems = {}
+        for _, cat in ipairs(SET_CATS) do
+            local cCat = cat
+            ddItems[#ddItems+1] = {
+                text    = cat,
+                onClick = function()
+                    currentSetCat = cCat
+                    setCatDD:SetSelectedText(cCat)
+                    ShowSetPicker()
+                end,
+            }
+        end
+        return ddItems
+    end)
+    setCatDD:SetSelectedText(currentSetCat)
+
+    -- Scroll frame for zone/boss list below the nav buttons
+    leftSF = CreateFrame("ScrollFrame","EWBrowserLeftScroll",
         leftPane, "UIPanelScrollFrameTemplate")
-    leftSF:SetPoint("TOPLEFT",     leftPane, "TOPLEFT",     4, -30)
+    leftSF:SetPoint("TOPLEFT",     leftPane, "TOPLEFT",     4, -(4+NAV_H+4))
     leftSF:SetPoint("BOTTOMRIGHT", leftPane, "BOTTOMRIGHT",-20,  4)
 
     local leftContent = CreateFrame("Frame", nil, leftSF)
@@ -2122,11 +2328,11 @@ local function CreateMainFrame()
     rightPane:SetBackdropColor(0.03,0.03,0.05,0.85)
     rightPane:SetBackdropBorderColor(0.35,0.28,0.08,1)
 
-    local bossHeader = rightPane:CreateFontString(nil,"OVERLAY","GameFontNormalLarge")
+    bossHeader = rightPane:CreateFontString(nil,"OVERLAY","GameFontNormalLarge")
     bossHeader:SetPoint("TOP", rightPane,"TOP", 0,-10)
     bossHeader:SetText("|cff888888Select a boss|r")
 
-    local bossSubHeader = rightPane:CreateFontString(nil,"OVERLAY","GameFontNormalSmall")
+    bossSubHeader = rightPane:CreateFontString(nil,"OVERLAY","GameFontNormalSmall")
     bossSubHeader:SetPoint("TOP", bossHeader,"BOTTOM", 0,-2)
     bossSubHeader:SetTextColor(0.55,0.50,0.32)
     bossSubHeader:SetText("")
@@ -2142,13 +2348,13 @@ local function CreateMainFrame()
     rightSF:SetPoint("TOPLEFT",     rightPane,"TOPLEFT",    6,-44)
     rightSF:SetPoint("BOTTOMRIGHT", rightPane,"BOTTOMRIGHT",-20, 4)
 
-    local gridContent = CreateFrame("Frame", nil, rightSF)
+    gridContent = CreateFrame("Frame", nil, rightSF)
     gridContent:SetWidth(rightSF:GetWidth())
     gridContent:SetHeight(1)
     rightSF:SetScrollChild(gridContent)
 
     -- ── Icon cell pool ─────────────────────────────────────────
-    local cellPool, activeCells = {}, {}
+    local cellPool; activeCells = {}; cellPool = {}
 
     RefreshCellChecks = function()
         for _, cell in ipairs(activeCells) do
@@ -2158,7 +2364,7 @@ local function CreateMainFrame()
         end
     end
 
-    local function GetCell()
+    GetCell = function()
         local cell = table.remove(cellPool)
         if not cell then
             cell = CreateFrame("Button", nil, gridContent)
@@ -2190,7 +2396,7 @@ local function CreateMainFrame()
         return cell
     end
 
-    local function ReleaseCell(cell)
+    ReleaseCell = function(cell)
         cell:Hide(); cell:ClearAllPoints()
         cell:SetScript("OnClick", nil)
         cell:SetScript("OnEnter", nil)
@@ -2199,7 +2405,7 @@ local function CreateMainFrame()
         table.insert(cellPool, cell)
     end
 
-    local function IsInWishlist(itemId)
+    IsInWishlist = function(itemId)
         if not db.activeList then return false end
         local list = db.lists[db.activeList]
         if not list then return false end
@@ -2245,7 +2451,7 @@ local function CreateMainFrame()
         return texture ~= nil   -- true = fully resolved
     end
 
-    local function LoadBossLoot(zone, boss)
+    LoadBossLoot = function(zone, boss)
         -- Invalidate any previous listener
         currentLoadId = currentLoadId + 1
         local myLoadId = currentLoadId
@@ -2361,6 +2567,121 @@ local function CreateMainFrame()
         end
     end
 
+    -- ── LoadZoneLoot: show ALL items across every boss in a zone ─
+    -- Used by the Sets picker so entire sets display at once.
+    LoadZoneLoot = function(zone)
+        currentLoadId = currentLoadId + 1
+        local myLoadId = currentLoadId
+        itemEventFrame:UnregisterAllEvents()
+        wipe(cellById)
+
+        for _, cell in ipairs(activeCells) do ReleaseCell(cell) end
+        wipe(activeCells)
+
+        -- Flatten all boss items in order
+        local items = {}
+        for _, bossName in ipairs(EW_BOSS_ORDER[zone] or {}) do
+            local bossItems = EW_BROWSE_DATA[zone] and EW_BROWSE_DATA[zone][bossName]
+            if bossItems then
+                for _, id in ipairs(bossItems) do
+                    items[#items+1] = id
+                end
+            end
+        end
+
+        if #items == 0 then
+            bossHeader:SetText("|cff888888(no items)|r")
+            bossSubHeader:SetText("")
+            gridContent:SetHeight(1)
+            return
+        end
+
+        bossHeader:SetText("|cffFFD700"..zone.."|r")
+        bossSubHeader:SetText("|cff9a7a32"..#items.." item"..(#items==1 and "" or "s").."|r")
+
+        local cellW   = ICON_SIZE + 2
+        local cellH   = ICON_SIZE + 24
+        local stepX   = cellW + ICON_PAD
+        local stepY   = cellH + ICON_PAD
+        local rows    = math.ceil(#items / ICON_COLS)
+        local totalW  = ICON_COLS * stepX - ICON_PAD
+        local offsetX = math.max(0, (gridContent:GetWidth() - totalW) / 2)
+
+        gridContent:SetWidth(rightSF:GetWidth() - 4)
+        gridContent:SetHeight(rows * stepY + ICON_PAD * 2)
+        rightSF:SetVerticalScroll(0)
+
+        for i, itemId in ipairs(items) do
+            local col = (i-1) % ICON_COLS
+            local row = math.floor((i-1) / ICON_COLS)
+            local cx  = offsetX + col * stepX
+            local cy  = -(ICON_PAD + row * stepY)
+
+            local cell = GetCell()
+            cell:SetParent(gridContent); cell:ClearAllPoints()
+            cell:SetPoint("TOPLEFT", gridContent,"TOPLEFT", cx, cy)
+            cell:SetSize(cellW, cellH)
+            cell:Show()
+
+            local resolved = ApplyCellData(cell, itemId)
+            if not resolved then
+                local captCell = cell
+                FetchItem(itemId, function(id)
+                    if currentLoadId ~= myLoadId then return end
+                    if captCell and captCell:IsShown() then
+                        ApplyCellData(captCell, id)
+                    end
+                end)
+                cellById[itemId] = cell
+            end
+
+            if IsInWishlist(itemId) then cell.check:Show() else cell.check:Hide() end
+
+            local captId = itemId
+            cell._itemId = itemId
+            cell:SetScript("OnClick", function()
+                if not db.activeList then
+                    Print("|cffFF4444Select or create a list first.|r"); return
+                end
+                local _, lk = GetItemInfo(captId)
+                local ok, err = AddItem(db.activeList, captId,
+                    lk or ("|cff0070dd[Item #"..captId.."]|r"), "")
+                if ok then
+                    cell.check:Show()
+                    RefreshItemRows()
+                    Print(string.format("Added %s to |cffFFD700%s|r.",
+                        lk or "Item #"..captId, db.activeList))
+                else
+                    Print("|cffFF4444"..(err or "Already in list.").."|r")
+                end
+            end)
+            cell:SetScript("OnEnter", function(self)
+                local _, lk = GetItemInfo(captId)
+                ShowItemTooltip(self, lk, captId)
+                local bc = self.bc or QUALITY_BORDER[1]
+                self.border:SetVertexColor(bc[1]*1.3, bc[2]*1.3, bc[3]*1.3, 1)
+            end)
+            cell:SetScript("OnLeave", function(self)
+                GameTooltip:Hide()
+                local bc = self.bc or QUALITY_BORDER[1]
+                self.border:SetVertexColor(bc[1], bc[2], bc[3], 0.9)
+            end)
+            table.insert(activeCells, cell)
+        end
+
+        itemEventFrame:RegisterEvent("GET_ITEM_INFO_RECEIVED")
+        itemEventFrame:SetScript("OnEvent", function(_, _, receivedId)
+            if currentLoadId ~= myLoadId then
+                itemEventFrame:UnregisterAllEvents(); return
+            end
+            local cell = cellById[receivedId]
+            if cell and cell:IsShown() then
+                ApplyCellData(cell, receivedId)
+                cellById[receivedId] = nil
+            end
+        end)
+    end
+
     -- ── Zone/boss list ────────────────────────────────────────
     local expandedZones  = {}
     local allBossButtons = {}
@@ -2390,7 +2711,7 @@ local function CreateMainFrame()
         return -(y - L_PAD)
     end
 
-    local function LoadCategory(zoneList)
+    LoadCategory = function(zoneList)
         -- Hide and clear previous entries
         for _, e in ipairs(activeEntries) do
             e.zBtn:Hide()
@@ -2495,102 +2816,11 @@ local function CreateMainFrame()
         end
     end
 
-    -- ── Wire up the category dropdown ────────────────────────
-    --  One item per zone, with "Raids" and "Dungeons" section
-    --  headers. Selecting a zone loads its bosses directly.
-    local function BuildZoneDropdown()
-        catDD:SetItems(function()
-            local ddItems = {}
-            if #EW_RAID_ZONES > 0 then
-                ddItems[#ddItems+1] = { isHeader=true, text="-- Raids --" }
-                for _, zone in ipairs(EW_RAID_ZONES) do
-                    local cZone = zone
-                    ddItems[#ddItems+1] = {
-                        text    = zone,
-                        onClick = function()
-                            catDD:SetSelectedText(cZone)
-                            LoadCategory({ cZone })
-                        end,
-                    }
-                end
-            end
-            if #EW_DUNG_ZONES > 0 then
-                ddItems[#ddItems+1] = { isHeader=true, text="-- Dungeons --" }
-                for _, zone in ipairs(EW_DUNG_ZONES) do
-                    local cZone = zone
-                    ddItems[#ddItems+1] = {
-                        text    = zone,
-                        onClick = function()
-                            catDD:SetSelectedText(cZone)
-                            LoadCategory({ cZone })
-                        end,
-                    }
-                end
-            end
-            if #EW_SET_ZONES > 0 then
-                ddItems[#ddItems+1] = { isHeader=true, text="-- Sets & Collections --" }
-
-                -- Sub-groups within sets
-                local setSubGroups = {
-                    { header="- Dungeon Sets -",   zones={"Fang Set", "Uldic Set", "Rune Warder Set"} },
-                    { header="- Raid Sets -",      zones={"Tier 0", "Tier 0.5", "Tier 1"} },
-                    { header="- World Drops -",    zones={"BoE World Drops"} },
-                }
-
-                -- Build a lookup of which set zones actually exist
-                local setZoneSet = {}
-                for _, z in ipairs(EW_SET_ZONES) do setZoneSet[z] = true end
-
-                local listed = {}
-                for _, group in ipairs(setSubGroups) do
-                    local any = false
-                    for _, z in ipairs(group.zones) do
-                        if setZoneSet[z] then any = true; break end
-                    end
-                    if any then
-                        ddItems[#ddItems+1] = { isHeader=true, text=group.header }
-                        for _, z in ipairs(group.zones) do
-                            if setZoneSet[z] then
-                                local cZone = z
-                                listed[z] = true
-                                ddItems[#ddItems+1] = {
-                                    text    = z,
-                                    onClick = function()
-                                        catDD:SetSelectedText(cZone)
-                                        LoadCategory({ cZone })
-                                    end,
-                                }
-                            end
-                        end
-                    end
-                end
-
-                -- Fallback: any set zones not in a sub-group
-                for _, zone in ipairs(EW_SET_ZONES) do
-                    if not listed[zone] then
-                        local cZone = zone
-                        ddItems[#ddItems+1] = {
-                            text    = zone,
-                            onClick = function()
-                                catDD:SetSelectedText(cZone)
-                                LoadCategory({ cZone })
-                            end,
-                        }
-                    end
-                end
-            end
-            return ddItems
-        end)
-        local first = EW_RAID_ZONES[1] or EW_DUNG_ZONES[1] or EW_SET_ZONES[1]
-        if first then catDD:SetSelectedText(first) end
-    end
-
-    -- Build on first show
+    -- ── Activate Raids nav button by default on first show ───────
     searchPanel:SetScript("OnShow", function(self)
         self:SetScript("OnShow", nil)
-        BuildZoneDropdown()
-        local first = EW_RAID_ZONES[1] or EW_DUNG_ZONES[1]
-        if first then LoadCategory({ first }) end
+        -- click the Raids button to initialise the view
+        NAV_BTNS[1]:GetScript("OnClick")(NAV_BTNS[1])
     end)
 
 

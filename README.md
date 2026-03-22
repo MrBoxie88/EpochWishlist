@@ -23,7 +23,7 @@ A multi-list gear wishlist addon for **Project Epoch** (WoW 3.3.5 / WotLK client
 - **Browse loot by zone** – dropdown organised into Raids, Dungeons, and Sets & Collections
 - **Click an icon** to add it directly to your active wishlist; a green checkmark appears on items already in your list
 - **Zones covered:** Onyxia's Lair, Blackwing Lair, all vanilla dungeons including Glittermurk Mines and Baradin Hold
-- **Sets & Collections:** Tier 0, Tier 0.5, Tier 1, Rune Warder Set, BoE World Drops
+- **Sets & Collections:** Tier 0, Tier 0.5, Tier 1, Rune Warder Set, BoE World Drops, and all Epoch PvP/class sets
 
 ### Sharing
 - **Export / Import** – export a list as text to share with guildmates; import a list someone sent you
@@ -56,6 +56,36 @@ Also: `/epochwishlist` and `/wishlist` work as aliases.
 - **Loot council**: Click **Council** in the toolbar to prepare a formatted summary — press Ctrl+C to copy and paste into Discord.
 - **Notes**: Right-click a row and choose Add Note / Edit Note.
 - **Reordering**: Left-click-drag a row up or down, or use Move to Top / Move to Bottom in the right-click menu.
+
+## Adding a New Zone
+Everything lives in `EpochWishlist_Items.lua` — you never need to touch `EpochWishlist.lua` for data changes.
+
+Add a `zone()` call with a **type tag** as the third argument:
+
+```lua
+-- Raid (default if omitted)
+zone("Molten Core", {
+    boss("Ragnaros", {
+        item(17204, "Eye of Sulfuras"),
+    }),
+}, "raid")
+
+-- Dungeon
+zone("Dire Maul East", {
+    boss("Zevrim Thornhoof", {
+        item(18389, "Satyr's Bow", 14.5),
+    }),
+}, "dungeon")
+
+-- Sets & Collections
+zone("My Custom Set", {
+    boss("Set Pieces", {
+        item(12345, "Cool Helm"),
+    }),
+}, "set")
+```
+
+The zone will automatically appear in the correct section of the Search Drops browser (Raids / Dungeons / Sets & Collections).
 
 ## File Structure
 ```

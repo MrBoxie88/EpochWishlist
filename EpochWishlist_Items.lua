@@ -2,32 +2,20 @@
 -- EpochWishlist_Items.lua
 -- Drop-source data for EpochWishlist.
 --
--- HOW TO ADD ITEMS:
---   Find the right zone block below.
---   Inside the boss block, add a new line:
---     item(12345, "Item Name"),
---   Or with a known drop chance:
---     item(12345, "Item Name", 16.7),
---
--- HOW TO ADD A NEW BOSS:
---   Inside a zone block, add:
---     boss("Boss Name", {
---         item(12345, "Item Name"),
---     }),
---
 -- HOW TO ADD A NEW ZONE:
---   At the bottom, add:
---     zone("Zone Name", {
---         boss("Boss Name", { item(...), }),
---     })
---   Then add the zone name to EW_DUNGEON_ZONES in EpochWishlist.lua
---   if it is a dungeon (raids are detected automatically).
+--   zone("Zone Name", { boss(...) }, "raid")      -- appears under Raids
+--   zone("Zone Name", { boss(...) }, "dungeon")   -- appears under Dungeons
+--   zone("Zone Name", { boss(...) }, "set")       -- appears under Sets & Collections
+--   Type defaults to "raid" if omitted.
+--   No need to edit EpochWishlist.lua at all.
 -------------------------------------------------------------------------------
 
-EW_DROP_DATA = {}
+EW_DROP_DATA  = {}
+EW_ZONE_TYPE  = {}   -- [zoneName] = "raid" | "dungeon" | "set"
 
 -- Helper: register all items for a boss into EW_DROP_DATA
-local function zone(zoneName, bossList)
+local function zone(zoneName, bossList, zoneType)
+    EW_ZONE_TYPE[zoneName] = zoneType or "raid"
     local em = "—"
     for _, b in ipairs(bossList) do
         for _, it in ipairs(b.items) do
@@ -46,7 +34,6 @@ end
 local function item(id, name, chance)
     return { id=id, name=name, chance=chance }
 end
-
 
 -- =====================================================================
 --  R A I D S
@@ -180,7 +167,7 @@ zone("Onyxia's Lair", {
         item( 61780, "Helm of the Glorious Defender", 33.33),
         item( 61786, "Helm of the Glorious Hero", 33.33),
     }),
-})
+}, "raid")
 
 -- =====================================================================
 --zone("Blackwing Lair", {
@@ -241,7 +228,7 @@ zone("Ragefire Chasm", {
         item( 60429, "Knives of the Satyr", nil),
         item( 60430, "Satyrchain Epaulets", nil),
     }),
-})
+}, "dungeon")
 
 -- =====================================================================
 zone("The Deadmines", {
@@ -295,7 +282,7 @@ zone("The Deadmines", {
         item( 5203, "An Unsent Letter", 100),    
         item( 3637, "Head of VanCleef", 100),    
     }),
-})
+}, "dungeon")
 
 -- =====================================================================
 zone("Wailing Caverns", {
@@ -348,7 +335,7 @@ zone("Wailing Caverns", {
     boss("Mutanus the Devourer", {
         item( 10413, "Gloves of the Fang", 1.2),
     }),
-})
+}, "dungeon")
 
 -- =====================================================================
 zone("Shadowfang Keep", {
@@ -414,7 +401,7 @@ zone("Shadowfang Keep", {
         item(  3194, "Black Malice", 0.02),
         item(  1484, "Witching Stave", 0.01),
     }),
-})
+}, "dungeon")
 
 -- =====================================================================
 zone("Blackfathom Deeps", {
@@ -462,7 +449,7 @@ zone("Blackfathom Deeps", {
         item(  3415, "Staff of the Friar", 0.02),
         item(  2271, "Staff of the Blessed Seer", 0.02),
     }),
-})
+}, "dungeon")
 
 -- =====================================================================
 zone("The Stockade", {
@@ -492,7 +479,7 @@ zone("The Stockade", {
     boss("Generic Mob", {
         item(  2909, "Red Wool Bandana", nil),
     }),
-})
+}, "dungeon")
 
 -- =====================================================================
 zone("Gnomeregan", {
@@ -539,7 +526,7 @@ zone("Gnomeregan", {
         item(  9488, "Oscillating Power Hammer", 0.02),
         item(  9487, "Hi-tech Supergun", 0.01),
     }),
-})
+}, "dungeon")
 
 -- =====================================================================
 zone("Razorfen Kraul", {
@@ -594,7 +581,7 @@ zone("Razorfen Kraul", {
         item(  1976, "Slaghammer", 0.02),
         item(  2549, "Staff of the Shade", 0.02),
     }),
-})
+}, "dungeon")
 
 -- =====================================================================
 zone("SM Graveyard", {
@@ -623,7 +610,7 @@ zone("SM Graveyard", {
         item(  7690, "Ebon Vise", 37.83),
         item(  7689, "Morbid Dawn", 19.15),
     }),
-})
+}, "dungeon")
 
 -- =====================================================================
 zone("SM Library", {
@@ -640,7 +627,7 @@ zone("SM Library", {
         item(  7712, "Mantle of Doan", 41.96),
         item(  7711, "Robe of Doan", 42.86),
     }),
-})
+}, "dungeon")
 
 -- =====================================================================
 zone("SM Armory", {
@@ -654,7 +641,7 @@ zone("SM Armory", {
     boss("Scarlet Trainee", {
         item( 23192, "Tabard of the Scarlet Crusade", 0.4),
     }),
-})
+}, "dungeon")
 
 -- =====================================================================
 zone("SM Cathedral", {
@@ -676,7 +663,7 @@ zone("SM Cathedral", {
         item(  7726, "Aegis of the Scarlet Commander", 38.37),
         item( 61978, "Ring of Hatred", nil),
     }),
-})
+}, "dungeon")
 
 -- =====================================================================
 zone("Razorfen Downs", {
@@ -728,7 +715,7 @@ zone("Razorfen Downs", {
         item( 10567, "Quillshooter", 0.02),
         item( 10572, "Freezing Shard", 0.01),
     }),
-})
+}, "dungeon")
 
 -- =====================================================================
 zone("Uldaman", {
@@ -814,7 +801,7 @@ zone("Uldaman", {
         item(  9426, "Monolithic Bow", 0.01),
         item(  9422, "Shadowforge Bushmaster", 0.01),
     }),
-})
+}, "dungeon")
 
 -- =====================================================================
 zone("Zul'Farrak", {
@@ -869,7 +856,7 @@ zone("Zul'Farrak", {
         item(  9483, "Flaming Incinerator", 0.01),
         item(  2040, "Troll Protector", 0.02),
     }),
-})
+}, "dungeon")
 
 -- =====================================================================
 zone("Maraudon", {
@@ -934,7 +921,7 @@ zone("Maraudon", {
         item( 17710, "Charstone Dirk", 14.24),
         item( 17766, "Princess Theradras' Scepter", 16.44),
     }),
-})
+}, "dungeon")
 
 -- =====================================================================
 zone("Sunken Temple", {
@@ -1023,7 +1010,7 @@ zone("Sunken Temple", {
         item( 10835, "Crest of Supremacy", 19.17),
         item( 10836, "Rod of Corrosion", 21.54),
     }),
-})
+}, "dungeon")
 
 -- =====================================================================
 zone("Blackrock Depths", {
@@ -1288,7 +1275,7 @@ zone("Blackrock Depths", {
         item( 12528, "The Judge's Gavel", 0.02),
         item( 12532, "Spire of the Stoneshaper", 0.01),
     }),
-})
+}, "dungeon")
 
 -- =====================================================================
 zone("LBRS", {
@@ -1402,7 +1389,7 @@ zone("LBRS", {
     boss("Trash Mobs", {
         item( 14152, "Robe of the Archmage", nil),
     }),
-})
+}, "dungeon")
 
 -- =====================================================================
 zone("UBRS", {
@@ -1511,7 +1498,7 @@ zone("UBRS", {
     boss("Trash Mobs", {
         item( 13260, "Wind Dancer Boots", 0.01),
     }),
-})
+}, "dungeon")
 
 -- =====================================================================
 --zone("DM East", {
@@ -1739,7 +1726,7 @@ zone("Stratholme", {
         item( 16723, "Lightforge Belt", 1.83),
         item( 60487, "Bonewyrm Sabatons", nil),
     }),
-})
+}, "dungeon")
 
 -- =====================================================================
 zone("Scholomance", {
@@ -1925,7 +1912,7 @@ zone("Scholomance", {
         item( 16727, "Lightforge Helm", 5.32),
         item( 14153, "Robe of the Void", nil),
     }),
-})
+}, "dungeon")
 
 -- =====================================================================
 zone("Glittermurk Mines", {
@@ -1970,7 +1957,7 @@ zone("Glittermurk Mines", {
         item( 60377, "Encrusted Fetish", nil),
         item( 60368, "Buckler of Seas", nil),
     }),
-})
+}, "dungeon")
 
 -- =====================================================================
 zone("Baradin Hold", {
@@ -2095,7 +2082,7 @@ zone("Baradin Hold", {
         item( 65703, "Kitchen Kilt", nil),
         item( 65701, "Gnawed Gnoll", nil),
     }),
-})
+}, "dungeon")
 
 -- =====================================================================
 --  S E T S   &   C O L L E C T I O N S
@@ -2108,362 +2095,7 @@ zone("Baradin Hold", {
 --  Items reuse the same zone/boss/item helpers.
 -- =====================================================================
 
-zone("Fang Set", {
-    boss("Leather - Wailing Caverns", {
-        item(  6473, "Armor of the Fang", 52.05),
-        item( 10413, "Gloves of the Fang", 1.2),
-        item( 10412, "Belt of the Fang", 8.64),
-        item( 10410, "Leggings of the Fang", 16.03),
-        item( 10411, "Footpads of the Fang", 19.08),
-    }),
-})
-
-zone("Uldic Set", {
-    boss("Plate - Uldaman", {
-        item( 60673, "Marred Uldic Helm", nil),
-        item( 60676, "Marred Uldic Shoulderpads", nil),
-        item( 60671, "Marred Uldic Chestplate", nil),
-        item( 60672, "Marred Uldic Hands", nil),
-        item( 60674, "Marred Uldic Legplates", nil),
-        item( 60675, "Marred Uldic Sabatons", nil),
-    }),
-})
-
-zone("Rune Warder Set", {
-    boss("Full Set", {
-        item( 60587, "Rune Warder´s Crown", nil),
-        item( 0, "Rune Warder's Mantle", nil),
-        item( 0, "Rune Warder's Raiment", nil),
-        item( 0, "Rune Warder's Loins", nil),
-        item( 0, "Rune Warder's Boots", nil),
-        item( 60590, "Rune Warder´s Gloves", nil),
-    }),
-})
-
 -- =====================================================================
-zone("Tier 0", {
-    boss("Druid - Cenarion Raiment", {
-        item(16673, "Cenarion Helm"),
-        item(16676, "Cenarion Spaulders"),
-        item(16672, "Cenarion Vestments"),
-        item(16679, "Cenarion Leggings"),
-        item(16678, "Cenarion Boots"),
-        item(16677, "Cenarion Gloves"),
-        item(16675, "Cenarion Bracers"),
-        item(16674, "Cenarion Belt"),
-    }),
-    boss("Hunter - Giantstalker Armor", {
-        item(16697, "Giantstalker's Helmet"),
-        item(16700, "Giantstalker's Epaulets"),
-        item(16696, "Giantstalker's Breastplate"),
-        item(16703, "Giantstalker's Leggings"),
-        item(16699, "Giantstalker's Boots"),
-        item(16698, "Giantstalker's Gloves"),
-        item(16701, "Giantstalker's Bracers"),
-        item(16702, "Giantstalker's Belt"),
-    }),
-    boss("Mage - Arcanist Regalia", {
-        item(16795, "Arcanist Crown"),
-        item(16797, "Arcanist Mantle"),
-        item(16794, "Arcanist Robes"),
-        item(16799, "Arcanist Leggings"),   -- note: also T2 boots in MC trash
-        item(16800, "Arcanist Boots"),
-        item(16796, "Arcanist Gloves"),
-        item(16801, "Arcanist Bindings"),
-        item(16802, "Arcanist Belt"),
-    }),
-    boss("Paladin - Lawbringer Armor", {
-        item(16728, "Lawbringer Helm"),
-        item(16731, "Lawbringer Spaulders"),
-        item(16727, "Lawbringer Chestguard"),
-        item(16734, "Lawbringer Legplates"),
-        item(16730, "Lawbringer Boots"),
-        item(16729, "Lawbringer Gauntlets"),
-        item(16732, "Lawbringer Bracers"),
-        item(16733, "Lawbringer Belt"),
-    }),
-    boss("Priest - Vestments of Prophecy", {
-        item(16812, "Crown of Prophecy"),
-        item(16814, "Mantle of Prophecy"),
-        item(16811, "Robes of Prophecy"),
-        item(16817, "Pants of Prophecy"),
-        item(16813, "Boots of Prophecy"),
-        item(16816, "Gloves of Prophecy"),
-        item(16815, "Bracelets of Prophecy"),
-        item(16818, "Belt of Prophecy"),
-    }),
-    boss("Rogue - Shadowcraft Armor", {
-        item(16707, "Shadowcraft Cap"),
-        item(16710, "Shadowcraft Spaulders"),
-        item(16706, "Shadowcraft Tunic"),
-        item(16713, "Shadowcraft Pants"),
-        item(16709, "Shadowcraft Boots"),
-        item(16708, "Shadowcraft Gloves"),
-        item(16711, "Shadowcraft Bracers"),
-        item(16712, "Shadowcraft Belt"),
-    }),
-    boss("Shaman - The Five Thunders", {
-        item(16840, "Helm of the Five Thunders"),
-        item(16842, "Pauldrons of the Five Thunders"),
-        item(16839, "Vest of the Five Thunders"),
-        item(16845, "Kilt of the Five Thunders"),
-        item(16841, "Boots of the Five Thunders"),
-        item(16843, "Gauntlets of the Five Thunders"),
-        item(16844, "Bindings of the Five Thunders"),
-        item(16846, "Belt of the Five Thunders"),
-    }),
-    boss("Warlock - Dreadmist Raiment", {
-        item(16719, "Dreadmist Mask"),
-        item(16721, "Dreadmist Mantle"),
-        item(16718, "Dreadmist Robe"),
-        item(16724, "Dreadmist Leggings"),
-        item(16720, "Dreadmist Sandals"),
-        item(16722, "Dreadmist Bracers"),
-        item(16723, "Dreadmist Belt"),
-        item(16725, "Dreadmist Wraps"),
-    }),
-    boss("Warrior - Battlegear of Valor", {
-        item(16685, "Helm of Valor"),
-        item(16688, "Spaulders of Valor"),
-        item(16684, "Breastplate of Valor"),
-        item(16691, "Legplates of Valor"),
-        item(16687, "Boots of Valor"),
-        item(16686, "Gauntlets of Valor"),
-        item(16689, "Bracers of Valor"),
-        item(16690, "Belt of Valor"),
-    }),
-})
-
--- =====================================================================
-zone("Tier 0.5", {
-    boss("Druid - Feralheart Raiment", {
-        item(22094, "Feralheart Helm"),
-        item(22095, "Feralheart Spaulders"),
-        item(22091, "Feralheart Vest"),
-        item(22097, "Feralheart Kilt"),
-        item(22093, "Feralheart Boots"),
-        item(22092, "Feralheart Gloves"),
-        item(22096, "Feralheart Bracers"),
-        item(22098, "Feralheart Belt"),
-    }),
-    boss("Hunter - Beastmaster Armor", {
-        item(22106, "Beastmaster's Cap"),
-        item(22107, "Beastmaster's Mantle"),
-        item(22103, "Beastmaster's Tunic"),
-        item(22109, "Beastmaster's Pants"),
-        item(22105, "Beastmaster's Boots"),
-        item(22104, "Beastmaster's Gloves"),
-        item(22108, "Beastmaster's Bracers"),
-        item(22110, "Beastmaster's Belt"),
-    }),
-    boss("Mage - Sorcerer's Regalia", {
-        item(22062, "Sorcerer's Crown"),
-        item(22063, "Sorcerer's Mantle"),
-        item(22059, "Sorcerer's Robes"),
-        item(22065, "Sorcerer's Leggings"),
-        item(22061, "Sorcerer's Boots"),
-        item(22060, "Sorcerer's Gloves"),
-        item(22064, "Sorcerer's Bindings"),
-        item(22066, "Sorcerer's Belt"),
-    }),
-    boss("Paladin - Soulforge Armor", {
-        item(22082, "Soulforge Helm"),
-        item(22083, "Soulforge Spaulders"),
-        item(22079, "Soulforge Breastplate"),
-        item(22085, "Soulforge Legplates"),
-        item(22081, "Soulforge Boots"),
-        item(22080, "Soulforge Gauntlets"),
-        item(22084, "Soulforge Bracers"),
-        item(22086, "Soulforge Belt"),
-    }),
-    boss("Priest - Vestments of the Devout", {
-        item(22070, "Devout Crown"),
-        item(22071, "Devout Mantle"),
-        item(22067, "Devout Robe"),
-        item(22073, "Devout Skirt"),
-        item(22069, "Devout Sandals"),
-        item(22068, "Devout Gloves"),
-        item(22072, "Devout Bracers"),
-        item(22074, "Devout Belt"),
-    }),
-    boss("Rogue - Darkmantle Armor", {
-        item(22006, "Darkmantle Cap"),
-        item(22007, "Darkmantle Spaulders"),
-        item(22003, "Darkmantle Tunic"),
-        item(22009, "Darkmantle Pants"),
-        item(22005, "Darkmantle Boots"),
-        item(22004, "Darkmantle Gloves"),
-        item(22008, "Darkmantle Bracers"),
-        item(22010, "Darkmantle Belt"),
-    }),
-    boss("Shaman - Ten Storms (Enhanced)", {
-        item(22118, "Helm of Ten Storms"),
-        item(22119, "Pauldrons of Ten Storms"),
-        item(22115, "Vest of Ten Storms"),
-        item(22121, "Kilt of Ten Storms"),
-        item(22117, "Boots of Ten Storms"),
-        item(22116, "Gauntlets of Ten Storms"),
-        item(22120, "Bindings of Ten Storms"),
-        item(22122, "Belt of Ten Storms"),
-    }),
-    boss("Warlock - Deathmist Raiment", {
-        item(22054, "Deathmist Mask"),
-        item(22055, "Deathmist Mantle"),
-        item(22051, "Deathmist Robe"),
-        item(22057, "Deathmist Leggings"),
-        item(22053, "Deathmist Sandals"),
-        item(22052, "Deathmist Gloves"),
-        item(22056, "Deathmist Bracers"),
-        item(22058, "Deathmist Belt"),
-    }),
-    boss("Warrior - Battlegear of Heroism", {
-        item(22090, "Helm of Heroism"),
-        item(22089, "Spaulders of Heroism"),
-        item(22086, "Breastplate of Heroism"),
-        item(22087, "Legplates of Heroism"),
-        item(22088, "Gauntlets of Heroism"),
-    }),
-})
-
--- =====================================================================
-zone("Tier 1", {
-    boss("Druid - Cenarion Raiment (T1)", {
-        item(16840, "Cenarion Helm"),
-        item(16838, "Cenarion Spaulders"),
-        item(16836, "Cenarion Vestments"),
-        item(16833, "Cenarion Leggings"),
-        item(16828, "Cenarion Boots"),
-        item(16829, "Cenarion Gloves"),
-        item(16832, "Cenarion Bracers"),
-        item(16830, "Cenarion Belt"),
-    }),
-    boss("Hunter - Giantstalker (T1)", {
-        item(16849, "Giantstalker's Helmet"),
-        item(16852, "Giantstalker's Epaulets"),
-        item(16847, "Giantstalker's Breastplate"),
-        item(16857, "Giantstalker's Leggings"),
-        item(16850, "Giantstalker's Boots"),
-        item(16851, "Giantstalker's Gloves"),
-        item(16854, "Giantstalker's Bracers"),
-        item(16858, "Giantstalker's Belt"),
-    }),
-    boss("Mage - Arcanist Regalia (T1)", {
-        item(16818, "Arcanist Crown"),
-        item(16819, "Arcanist Mantle"),
-        item(16816, "Arcanist Robes"),
-        item(16822, "Arcanist Leggings"),
-        item(16820, "Arcanist Boots"),
-        item(16821, "Arcanist Gloves"),
-        item(16817, "Arcanist Bindings"),
-        item(16823, "Arcanist Belt"),
-    }),
-    boss("Paladin - Lawbringer (T1)", {
-        item(16860, "Lawbringer Helm"),
-        item(16863, "Lawbringer Spaulders"),
-        item(16859, "Lawbringer Chestguard"),
-        item(16866, "Lawbringer Legplates"),
-        item(16862, "Lawbringer Boots"),
-        item(16861, "Lawbringer Gauntlets"),
-        item(16864, "Lawbringer Bracers"),
-        item(16865, "Lawbringer Belt"),
-    }),
-    boss("Priest - Vestments of Prophecy (T1)", {
-        item(16811, "Crown of Prophecy"),
-        item(16813, "Mantle of Prophecy"),
-        item(16810, "Robes of Prophecy"),
-        item(16815, "Pants of Prophecy"),
-        item(16809, "Boots of Prophecy"),
-        item(16812, "Gloves of Prophecy"),
-        item(16814, "Bracelets of Prophecy"),
-        item(16816, "Belt of Prophecy"),
-    }),
-    boss("Rogue - Shadowcraft (T1)", {
-        item(16707, "Shadowcraft Cap"),
-        item(16710, "Shadowcraft Spaulders"),
-        item(16706, "Shadowcraft Tunic"),
-        item(16713, "Shadowcraft Pants"),
-        item(16709, "Shadowcraft Boots"),
-        item(16708, "Shadowcraft Gloves"),
-        item(16711, "Shadowcraft Bracers"),
-        item(16712, "Shadowcraft Belt"),
-    }),
-    boss("Shaman - The Five Thunders (T1)", {
-        item(16943, "Helm of the Five Thunders"),
-        item(16946, "Pauldrons of the Five Thunders"),
-        item(16942, "Vest of the Five Thunders"),
-        item(16948, "Kilt of the Five Thunders"),
-        item(16944, "Boots of the Five Thunders"),
-        item(16945, "Gauntlets of the Five Thunders"),
-        item(16947, "Bindings of the Five Thunders"),
-        item(16949, "Belt of the Five Thunders"),
-    }),
-    boss("Warlock - Felheart Raiment (T1)", {
-        item(16803, "Felheart Horns"),
-        item(16805, "Felheart Shoulder Pads"),
-        item(16802, "Felheart Robes"),
-        item(16808, "Felheart Pants"),
-        item(16804, "Felheart Slippers"),
-        item(16806, "Felheart Gloves"),
-        item(16807, "Felheart Bracers"),
-        item(16800, "Felheart Belt"),
-    }),
-    boss("Warrior - Battlegear of Might (T1)", {
-        item(16866, "Helm of Might"),
-        item(16869, "Spaulders of Might"),
-        item(16864, "Breastplate of Might"),
-        item(16873, "Legplates of Might"),
-        item(16868, "Boots of Might"),
-        item(16867, "Gauntlets of Might"),
-        item(16871, "Bracers of Might"),
-        item(16872, "Belt of Might"),
-    }),
-})
-
--- =====================================================================
-zone("BoE World Drops", {
-    boss("Plate", {
-        item(12632, "Dawnbringer Shoulders"),
-        item(12618, "Burial Shawl"),
-        item(13142, "Eldritch Reinforced Legplates"),
-        item(14552, "Warmaster Legguards"),
-        item(14554, "Legplates of the Eternal Guardian"),
-        item(18423, "Field Marshal's Plate Armor"),
-    }),
-    boss("Mail", {
-        item(14136, "Hyena Hide Jerkin"),
-        item(14554, "Windtalker's Wristguards"),
-        item(18424, "Overlord's Crimson Band"),
-        item(14048, "Beaststalker's Mantle"),
-    }),
-    boss("Leather", {
-        item(14637, "Shadowskin Gloves"),
-        item(14635, "Toughened Leather Gloves"),
-        item(18426, "Fiendish Machete"),
-        item(14170, "Thallium Choker"),
-    }),
-    boss("Cloth", {
-        item(14111, "Robe of Volatile Power"),
-        item(14154, "Freezing Lich Robes"),
-        item(18450, "Freezing Band"),
-        item(14340, "Gloves of Spell Mastery"),
-        item(18449, "Fordring's Seal"),
-    }),
-    boss("Weapons", {
-        item(12797, "Alcor's Sunrazor"),
-        item(14576, "Krol Blade"),
-        item(17110, "Striker's Mark"),
-        item(18348, "Barbarous Blade"),
-        item(14555, "Deathblow"),
-        item(13983, "Skull of Impending Doom"),
-    }),
-    boss("Trinkets & Rings", {
-        item(13178, "Burst of Knowledge"),
-        item(11815, "Talisman of Ephemeral Power"),
-        item(18540, "Mindtap Talisman"),
-        item(18104, "Second Wind"),
-        item(13384, "Nat Pagle's Extreme Angler FC-5000"),
-    }),
-})
 
 zone("World Bosses", {
     boss("Corruptedancient", {
@@ -2528,4 +2160,1548 @@ zone("World Bosses", {
         item( 64748, "Pyrite-Studded Chain Epaulets", nil),
         item( 64749, "Seethe", nil),
     }),
-})
+}, "raid")
+-- =====================================================================
+zone("Tier 0 - Wildheart (Druid)", {
+    boss("Darkmaster Gandling (Scholo)", {
+        item( 16720, "Wildheart Cowl", 7.09),
+    }),
+    boss("Gizrul the Slavener (LBRS)", {
+        item( 16718, "Wildheart Spaulders", 11.04),
+    }),
+    boss("General Drakkisath (UBRS)", {
+        item( 16706, "Wildheart Vest", 7.36),
+    }),
+    boss("Trash Mobs (Stratholme)", {
+        item( 16714, "Wildheart Bracers", 1.85),
+    }),
+    boss("The Unforgiven (Stratholme)", {
+        item( 16717, "Wildheart Gloves", 12.61),
+    }),
+    boss("Trash Mobs (Scholomance)", {
+        item( 16716, "Wildheart Belt", 2.6),
+    }),
+    boss("Baron Rivendare (Stratholme)", {
+        item( 16719, "Wildheart Kilt", 6.58),
+    }),
+    boss("Mother Smolderweb (LBRS)", {
+        item( 16715, "Wildheart Boots", 13.03),
+    }),
+}, "set")
+
+-- =====================================================================
+zone("Tier 0 - Beaststalker (Hunter)", {
+    boss("Darkmaster Gandling (Scholo)", {
+        item( 16677, "Beaststalker's Cap", 7.0),
+    }),
+    boss("Overlord Wyrmthalak (LBRS)", {
+        item( 16679, "Beaststalker's Mantle", 9.89),
+    }),
+    boss("General Drakkisath (UBRS)", {
+        item( 16674, "Beaststalker's Tunic", 6.81),
+    }),
+    boss("Trash Mobs (Stratholme)", {
+        item( 16681, "Beaststalker's Bindings", 1.64),
+    }),
+    boss("War Master Voone (LBRS)", {
+        item( 16676, "Beaststalker's Gloves", 9.15),
+    }),
+    boss("Trash Mobs (LBRS)", {
+        item( 16680, "Beaststalker's Belt", 1.36),
+    }),
+    boss("Baron Rivendare (Stratholme)", {
+        item( 16678, "Beaststalker's Pants", 6.16),
+    }),
+    boss("Nerub'enkan (Stratholme)", {
+        item( 16675, "Beaststalker's Boots", 13.62),
+    }),
+}, "set")
+
+-- =====================================================================
+zone("Tier 0 - Magister's (Mage)", {
+    boss("Darkmaster Gandling (Scholo)", {
+        item( 16686, "Magister's Crown", 8.6),
+    }),
+    boss("Ras Frostwhisper (Scholo)", {
+        item( 16689, "Magister's Mantle", 11.93),
+    }),
+    boss("General Drakkisath (UBRS)", {
+        item( 16688, "Magister's Robes", 7.24),
+    }),
+    boss("Trash Mobs (LBRS)", {
+        item( 16683, "Magister's Bindings", 1.19),
+    }),
+    boss("Doctor Theolen Krastinov (Scholo)", {
+        item( 16684, "Magister's Gloves", 9.75),
+    }),
+    boss("Trash Mobs (Stratholme)", {
+        item( 16685, "Magister's Belt", 1.32),
+    }),
+    boss("Baron Rivendare (Stratholme)", {
+        item( 16687, "Magister's Leggings", 6.79),
+    }),
+    boss("Hearthsinger Forresten (Stratholme)", {
+        item( 16682, "Magister's Boots", 10.86),
+    }),
+}, "set")
+
+-- =====================================================================
+zone("Tier 0 - Lightforge (Paladin)", {
+    boss("Darkmaster Gandling (Scholo)", {
+        item( 16727, "Lightforge Helm", 5.32),
+    }),
+    boss("The Beast (UBRS)", {
+        item( 16729, "Lightforge Spaulders", 13.62),
+    }),
+    boss("General Drakkisath (UBRS)", {
+        item( 16726, "Lightforge Breastplate", 3.76),
+    }),
+    boss("Trash Mobs (Scholomance)", {
+        item( 16722, "Lightforge Bracers", 3.37),
+    }),
+    boss("Timmy the Cruel (Stratholme)", {
+        item( 16724, "Lightforge Gauntlets", 10.42),
+    }),
+    boss("Trash Mobs (Stratholme)", {
+        item( 16723, "Lightforge Belt", 1.93),
+    }),
+    boss("Baron Rivendare (Stratholme)", {
+        item( 16728, "Lightforge Legplates", 4.2),
+    }),
+    boss("Balnazzar (Stratholme)", {
+        item( 16725, "Lightforge Boots", 11.11),
+    }),
+}, "set")
+
+-- =====================================================================
+zone("Tier 0 - Devout (Priest)", {
+    boss("Darkmaster Gandling (Scholo)", {
+        item( 16693, "Devout Crown", 7.89),
+    }),
+    boss("Solakar Flamewreath (UBRS)", {
+        item( 16695, "Devout Mantle", 12.84),
+    }),
+    boss("General Drakkisath (UBRS)", {
+        item( 16690, "Devout Robe", 6.2),
+    }),
+    boss("Trash Mobs (Stratholme)", {
+        item( 16697, "Devout Bracers", 1.13),
+    }),
+    boss("Archivist Galford (Stratholme)", {
+        item( 16692, "Devout Gloves", 12.46),
+    }),
+    boss("Trash Mobs (LBRS)", {
+        item( 16696, "Devout Belt", 2.07),
+    }),
+    boss("Baron Rivendare (Stratholme)", {
+        item( 16694, "Devout Skirt", 7.42),
+    }),
+    boss("Maleki the Pallid (Stratholme)", {
+        item( 16691, "Devout Sandals", 13.64),
+    }),
+}, "set")
+
+-- =====================================================================
+zone("Tier 0 - Shadowcraft (Rogue)", {
+    boss("Darkmaster Gandling (Scholo)", {
+        item( 16707, "Shadowcraft Cap", 6.65),
+    }),
+    boss("Cannon Master Willey (Stratholme)", {
+        item( 16708, "Shadowcraft Spaulders", 10.68),
+    }),
+    boss("General Drakkisath (UBRS)", {
+        item( 16721, "Shadowcraft Tunic", 6.09),
+    }),
+    boss("Trash Mobs (Scholomance)", {
+        item( 16710, "Shadowcraft Bracers", 3.51),
+    }),
+    boss("Shadow Hunter Vosh'gajin (LBRS)", {
+        item( 16712, "Shadowcraft Gloves", 11.89),
+    }),
+    boss("Trash Mobs (LBRS)", {
+        item( 16713, "Shadowcraft Belt", 1.05),
+    }),
+    boss("Baron Rivendare (Stratholme)", {
+        item( 16709, "Shadowcraft Pants", 7.76),
+    }),
+    boss("Rattlegore (Scholo)", {
+        item( 16711, "Shadowcraft Boots", 14.32),
+    }),
+}, "set")
+
+-- =====================================================================
+zone("Tier 0 - Elements (Shaman)", {
+    boss("Darkmaster Gandling (Scholo)", {
+        item( 16667, "Coif of Elements", 2.86),
+    }),
+    boss("Gyth (UBRS)", {
+        item( 16669, "Pauldrons of Elements", 14.77),
+    }),
+    boss("General Drakkisath (UBRS)", {
+        item( 16666, "Vest of Elements", 3.03),
+    }),
+    boss("Trash Mobs (Stratholme)", {
+        item( 16671, "Bindings of Elements", 1.59),
+    }),
+    boss("Pyroguard Emberseer (UBRS)", {
+        item( 16672, "Gauntlets of Elements", 14.23),
+    }),
+    boss("Trash Mobs (LBRS)", {
+        item( 16673, "Cord of Elements", 1.06),
+    }),
+    boss("Baron Rivendare (Stratholme)", {
+        item( 16668, "Kilt of Elements", 3.02),
+    }),
+    boss("Highlord Omokk (LBRS)", {
+        item( 16670, "Boots of Elements", 9.35),
+    }),
+}, "set")
+
+-- =====================================================================
+zone("Tier 0 - Dreadmist (Warlock)", {
+    boss("Darkmaster Gandling (Scholo)", {
+        item( 16698, "Dreadmist Mask", 8.78),
+    }),
+    boss("Jandice Barov (Scholo)", {
+        item( 16701, "Dreadmist Mantle", 12.2),
+    }),
+    boss("General Drakkisath (UBRS)", {
+        item( 16700, "Dreadmist Robe", 8.04),
+    }),
+    boss("Trash Mobs (LBRS)", {
+        item( 16703, "Dreadmist Bracers", 1.68),
+    }),
+    boss("Lorekeeper Polkelt (Scholo)", {
+        item( 16705, "Dreadmist Wraps", 14.54),
+    }),
+    boss("Trash Mobs (Stratholme)", {
+        item( 16702, "Dreadmist Belt", 1.03),
+    }),
+    boss("Baron Rivendare (Stratholme)", {
+        item( 16699, "Dreadmist Leggings", 7.31),
+    }),
+    boss("Baroness Anastari (Stratholme)", {
+        item( 16704, "Dreadmist Sandals", 13.16),
+    }),
+}, "set")
+
+-- =====================================================================
+zone("Tier 0 - Valor (Warrior)", {
+    boss("Darkmaster Gandling (Scholo)", {
+        item( 16731, "Helm of Valor", 6.54),
+    }),
+    boss("Warchief Rend Blackhand (UBRS)", {
+        item( 16733, "Spaulders of Valor", 13.39),
+    }),
+    boss("General Drakkisath (UBRS)", {
+        item( 16730, "Breastplate of Valor", 5.83),
+    }),
+    boss("Trash Mobs (LBRS)", {
+        item( 16735, "Bracers of Valor", 1.49),
+    }),
+    boss("Ramstein the Gorger (Stratholme)", {
+        item( 16737, "Gauntlets of Valor", 9.58),
+    }),
+    boss("Trash Mobs (LBRS)", {
+        item( 16736, "Belt of Valor", 1.96),
+    }),
+    boss("Baron Rivendare (Stratholme)", {
+        item( 16732, "Legplates of Valor", 5.74),
+    }),
+    boss("Kirtonos the Herald (Scholo)", {
+        item( 16734, "Boots of Valor", 11.12),
+    }),
+}, "set")
+
+-- =====================================================================
+zone("Tier 0.5 - Beastmaster (Hunter)", {
+    boss("Beastmaster's Set", {
+        item( 22013, "Beastmaster's Cap"),
+        item( 22016, "Beastmaster's Mantle"),
+        item( 22060, "Beastmaster's Tunic"),
+        item( 22011, "Beastmaster's Bindings"),
+        item( 22015, "Beastmaster's Gloves"),
+        item( 22010, "Beastmaster's Belt"),
+        item( 22017, "Beastmaster's Pants"),
+        item( 22061, "Beastmaster's Boots"),
+    }),
+}, "set")
+
+-- =====================================================================
+zone("Tier 0.5 - Sorcerer (Mage)", {
+    boss("Sorcerer's Set", {
+        item( 22065, "Sorcerer's Crown"),
+        item( 22068, "Sorcerer's Mantle"),
+        item( 22069, "Sorcerer's Robes"),
+        item( 22063, "Sorcerer's Bindings"),
+        item( 22066, "Sorcerer's Gloves"),
+        item( 22062, "Sorcerer's Belt"),
+        item( 22067, "Sorcerer's Leggings"),
+        item( 22064, "Sorcerer's Boots"),
+    }),
+}, "set")
+
+-- =====================================================================
+zone("Tier 0.5 - Darkmantle (Rogue)", {
+    boss("Darkmantle Set", {
+        item( 22005, "Darkmantle Cap"),
+        item( 22008, "Darkmantle Spaulders"),
+        item( 22009, "Darkmantle Tunic"),
+        item( 22004, "Darkmantle Bracers"),
+        item( 22006, "Darkmantle Gloves"),
+        item( 22002, "Darkmantle Belt"),
+        item( 22007, "Darkmantle Pants"),
+        item( 22003, "Darkmantle Boots"),
+    }),
+}, "set")
+
+-- =====================================================================
+zone("Tier 0.5 - Five Thunders (Shaman)", {
+    boss("Five Thunders Set", {
+        item( 22097, "Coif of The Five Thunders"),
+        item( 22101, "Pauldrons of The Five Thunders"),
+        item( 22102, "Vest of The Five Thunders"),
+        item( 22095, "Bindings of The Five Thunders"),
+        item( 22099, "Gauntlets of The Five Thunders"),
+        item( 22098, "Cord of The Five Thunders"),
+        item( 22100, "Kilt of The Five Thunders"),
+        item( 22096, "Boots of The Five Thunders"),
+    }),
+    boss("Aftershock Set", {
+        item( 60354, "Coif of Aftershock"),
+        item( 60353, "Pauldrons of Aftershock"),
+        item( 60355, "Vest of Aftershock"),
+        item( 60350, "Bindings of Aftershock"),
+        item( 60351, "Gauntlets of Aftershock"),
+        item( 60349, "Cord of Aftershock"),
+        item( 60356, "Kilt of Aftershock"),
+        item( 60352, "Boots of Aftershock"),
+    }),
+    boss("The Great Sea Set", {
+        item( 60346, "Coif of the Great Sea"),
+        item( 60345, "Pauldrons of the Great Sea"),
+        item( 60347, "Vest of the Great Sea"),
+        item( 60341, "Bindings of the Great Sea"),
+        item( 60343, "Gauntlets of the Great Sea"),
+        item( 60348, "Cord of the Great Sea"),
+        item( 60344, "Kilt of the Great Sea"),
+        item( 60342, "Boots of the Great Sea"),
+    }),
+}, "set")
+
+-- =====================================================================
+zone("Tier 0.5 - Deathmist (Warlock)", {
+    boss("Deathmist Set", {
+        item( 22074, "Deathmist Mask"),
+        item( 22073, "Deathmist Mantle"),
+        item( 22075, "Deathmist Robe"),
+        item( 22071, "Deathmist Bracers"),
+        item( 22077, "Deathmist Wraps"),
+        item( 22070, "Deathmist Belt"),
+        item( 22072, "Deathmist Leggings"),
+        item( 22076, "Deathmist Sandals"),
+    }),
+}, "set")
+
+-- =====================================================================
+zone("Tier 0.5 - Heroism (Warrior)", {
+    boss("Battlegear of Heroism", {
+        item( 21999, "Helm of Heroism"),
+        item( 22001, "Spaulders of Heroism"),
+        item( 21997, "Breastplate of Heroism"),
+        item( 21996, "Bracers of Heroism"),
+        item( 21998, "Gauntlets of Heroism"),
+        item( 21994, "Belt of Heroism"),
+        item( 22000, "Legplates of Heroism"),
+        item( 21995, "Boots of Heroism"),
+    }),
+    boss("Battlegear of Triumph (Epoch)", {
+        item( 60362, "Helm of Triumph"),
+        item( 60361, "Spaulders of Triumph"),
+        item( 60363, "Breastplate of Triumph"),
+        item( 60358, "Bracers of Triumph"),
+        item( 60359, "Gauntlets of Triumph"),
+        item( 60357, "Belt of Triumph"),
+        item( 60364, "Legplates of Triumph"),
+        item( 60360, "Boots of Triumph"),
+    }),
+}, "set")
+
+-- =====================================================================
+zone("Tier 0.5 - Soulforge (Paladin)", {
+    boss("Soulforge Set", {
+        item( 22091, "Soulforge Helm"),
+        item( 22093, "Soulforge Spaulders"),
+        item( 22089, "Soulforge Breastplate"),
+        item( 22088, "Soulforge Bracers"),
+        item( 22090, "Soulforge Gauntlets"),
+        item( 22086, "Soulforge Belt"),
+        item( 22092, "Soulforge Legplates"),
+        item( 22087, "Soulforge Boots"),
+    }),
+    boss("Holyforge Armor", {
+        item( 60318, "Holyforge Helm"),
+        item( 60317, "Holyforge Spaulders"),
+        item( 60319, "Holyforge Breastplate"),
+        item( 60313, "Holyforge Bracers"),
+        item( 60315, "Holyforge Gauntlets"),
+        item( 60320, "Holyforge Belt"),
+        item( 60316, "Holyforge Legplates"),
+        item( 60314, "Holyforge Boots"),
+    }),
+    boss("Vigilforge Armor", {
+        item( 60310, "Vigilforge Helm"),
+        item( 60309, "Vigilforge Spaulders"),
+        item( 60311, "Vigilforge Breastplate"),
+        item( 60305, "Vigilforge Bracers"),
+        item( 60307, "Vigilforge Gauntlets"),
+        item( 60312, "Vigilforge Belt"),
+        item( 60308, "Vigilforge Legplates"),
+        item( 60306, "Vigilforge Boots"),
+    }),
+}, "set")
+
+-- =====================================================================
+zone("Tier 0.5 - Virtuous (Priest)", {
+    boss("Vestments of the Virtuous", {
+        item( 22080, "Virtuous Crown"),
+        item( 22082, "Virtuous Mantle"),
+        item( 22083, "Virtuous Robe"),
+        item( 22079, "Virtuous Bracers"),
+        item( 22081, "Virtuous Gloves"),
+        item( 22078, "Virtuous Belt"),
+        item( 22085, "Virtuous Skirt"),
+        item( 22084, "Virtuous Sandals"),
+    }),
+    boss("Vestments of the Pious", {
+        item( 60326, "Pious Crown"),
+        item( 60325, "Pious Mantle"),
+        item( 60327, "Pious Robe"),
+        item( 60321, "Pious Bracers"),
+        item( 60323, "Pious Gloves"),
+        item( 60328, "Pious Belt"),
+        item( 60324, "Pious Skirt"),
+        item( 60322, "Pious Sandals"),
+    }),
+}, "set")
+
+-- =====================================================================
+zone("Epoch Sets - Druid", {
+    boss("Treeheart Raiment", {
+        item( 60299, "Treeheart Cowl"),
+        item( 60298, "Treeheart Spaulders"),
+        item( 60300, "Treeheart Vest"),
+        item( 60295, "Treeheart Bracers"),
+        item( 60296, "Treeheart Gloves"),
+        item( 60294, "Treeheart Belt"),
+        item( 60301, "Treeheart Kilt"),
+        item( 60297, "Treeheart Boots"),
+    }),
+    boss("Featherheart Raiment", {
+        item( 60290, "Featherheart Cowl"),
+        item( 60289, "Featherheart Spaulders"),
+        item( 60291, "Featherheart Vest"),
+        item( 60286, "Featherheart Bracers"),
+        item( 60287, "Featherheart Gloves"),
+        item( 60285, "Featherheart Belt"),
+        item( 60292, "Featherheart Kilt"),
+        item( 60288, "Featherheart Boots"),
+    }),
+    boss("Feralheart Raiment", {
+        item( 22109, "Feralheart Cowl"),
+        item( 22112, "Feralheart Spaulders"),
+        item( 22113, "Feralheart Vest"),
+        item( 22108, "Feralheart Bracers"),
+        item( 22110, "Feralheart Gloves"),
+        item( 22106, "Feralheart Belt"),
+        item( 22111, "Feralheart Kilt"),
+        item( 22107, "Feralheart Boots"),
+    }),
+}, "set")
+
+-- =====================================================================
+zone("Scholomance Sets", {
+    boss("Necropile (Cloth)", {
+        item( 14633, "Necropile Mantle", 1.12),
+        item( 14626, "Necropile Robe", 1.27),
+        item( 14629, "Necropile Cuffs", 1.03),
+        item( 14632, "Necropile Leggings", 0.85),
+        item( 14631, "Necropile Boots", 0.88),
+    }),
+    boss("Cadaverous (Leather)", {
+        item( 14637, "Cadaverous Armor", 1.51),
+        item( 14640, "Cadaverous Gloves", 0.82),
+        item( 14636, "Cadaverous Belt", 0.6),
+        item( 14638, "Cadaverous Leggings", 1.09),
+        item( 14641, "Cadaverous Walkers", 0.67),
+    }),
+    boss("Bloodmail (Mail)", {
+        item( 14611, "Bloodmail Hauberk", 0.54),
+        item( 14615, "Bloodmail Gauntlets", 0.09),
+        item( 14614, "Bloodmail Belt", 0.6),
+        item( 14612, "Bloodmail Legguards", 0.42),
+        item( 14616, "Bloodmail Boots", 0.36),
+    }),
+    boss("Deathbone (Plate)", {
+        item( 14624, "Deathbone Chestplate", 0.45),
+        item( 14622, "Deathbone Gauntlets", 0.45),
+        item( 14620, "Deathbone Girdle", 0.67),
+        item( 14623, "Deathbone Legguards", 1.12),
+        item( 14621, "Deathbone Sabatons", 0.57),
+    }),
+}, "set")
+
+-- =====================================================================
+zone("Ironweave Battlesuit", {
+    boss("Ironweave Set", {
+        item( 22302, "Ironweave Cowl", 27.72),
+        item( 22305, "Ironweave Mantle", 30.39),
+        item( 22301, "Ironweave Robe", 19.0),
+        item( 22313, "Ironweave Bracers", 18.16),
+        item( 22304, "Ironweave Gloves", 16.24),
+        item( 22306, "Ironweave Belt", 20.28),
+        item( 22303, "Ironweave Pants", 23.33),
+        item( 22311, "Ironweave Boots", 12.31),
+    }),
+}, "set")
+
+-- =====================================================================
+zone("Savage Gladiator (BRD)", {
+    boss("Savage Gladiator Set", {
+        item( 11729, "Savage Gladiator Helm", 10.08),
+        item( 11726, "Savage Gladiator Chain", 14.52),
+        item( 11730, "Savage Gladiator Grips", 14.12),
+        item( 11728, "Savage Gladiator Leggings", 14.95),
+        item( 11731, "Savage Gladiator Greaves", 15.14),
+    }),
+}, "set")
+
+-- =====================================================================
+zone("The Postmaster Set", {
+    boss("Postmaster's Set", {
+        item( 13390, "The Postmaster's Band"),
+        item( 13388, "The Postmaster's Tunic"),
+        item( 13389, "The Postmaster's Trousers"),
+        item( 13391, "The Postmaster's Treads"),
+        item( 13392, "The Postmaster's Seal"),
+    }),
+}, "set")
+
+-- =====================================================================
+zone("Uldic Plate", {
+    boss("Uldic Set", {
+        item( 60673, "Marred Uldic Helm"),
+        item( 60676, "Marred Uldic Shoulderpads"),
+        item( 60671, "Marred Uldic Chestplate"),
+        item( 60672, "Marred Uldic Hands"),
+        item( 60674, "Marred Uldic Legplates"),
+        item( 60675, "Marred Uldic Sabatons"),
+    }),
+}, "set")
+
+-- =====================================================================
+zone("Rune Warder Set", {
+    boss("Rune Warder", {
+        item( 60587, "Rune Warder's Crown"),
+        item( 60588, "Rune Warder's Mantle"),
+        item( 60589, "Rune Warder's Raiment"),
+        item( 60590, "Rune Warder's Gloves"),
+        item( 60591, "Rune Warder's Loins"),
+        item( 60592, "Rune Warder's Boots"),
+    }),
+}, "set")
+
+-- =====================================================================
+zone("Epoch Sets - Cenarius (Druid T1.5)", {
+    boss("Cenarius Set - Feral", {
+        item( 61544, "Antlers of Cenarius"),
+        item( 61545, "Pauldrons of Cenarius"),
+        item( 61546, "Chestpiece of Cenarius"),
+        item( 61547, "Britches of Cenarius"),
+        item( 61548, "Gloves of Cenarius"),
+        item( 61549, "Striders of Cenarius"),
+    }),
+    boss("Cenarius Set - Balance", {
+        item( 61550, "Stag-Helm of Cenarius"),
+        item( 61551, "Mantle of Cenarius"),
+        item( 61552, "Breastplate of Cenarius"),
+        item( 61553, "Greaves of Cenarius"),
+        item( 61554, "Gauntlets of Cenarius"),
+        item( 61555, "Boots of Cenarius"),
+    }),
+    boss("Cenarius Set - Resto", {
+        item( 61556, "Crown of Cenarius"),
+        item( 61557, "Shoulderguards of Cenarius"),
+        item( 61558, "Chestguard of Cenarius"),
+        item( 61559, "Legguards of Cenarius"),
+        item( 61560, "Handguards of Cenarius"),
+        item( 61561, "Treads of Cenarius"),
+    }),
+}, "set")
+
+-- =====================================================================
+zone("Epoch Sets - Giantstalker (Hunter T1.5)", {
+    boss("Giantstalker's Set", {
+        item( 61563, "Giantstalker's Helmet"),
+        item( 61566, "Giantstalker's Epaulets"),
+        item( 61565, "Giantstalker's Breastplate"),
+        item( 61564, "Giantstalker's Leggings"),
+        item( 61562, "Giantstalker's Gloves"),
+        item( 61567, "Giantstalker's Boots"),
+    }),
+}, "set")
+
+-- =====================================================================
+zone("Epoch Sets - Arcanist (Mage T1.5)", {
+    boss("Arcanist Set", {
+        item( 61569, "Arcanist Crown"),
+        item( 61572, "Arcanist Mantle"),
+        item( 61571, "Arcanist Robes"),
+        item( 61570, "Arcanist Leggings"),
+        item( 61568, "Arcanist Gloves"),
+        item( 61573, "Arcanist Boots"),
+    }),
+}, "set")
+
+-- =====================================================================
+zone("Epoch Sets - Lawbringer (Paladin T1.5)", {
+    boss("Lawbringer Set - Holy", {
+        item( 61574, "Lawbringer Diadem"),
+        item( 61575, "Lawbringer Pauldrons"),
+        item( 61576, "Lawbringer Chestpiece"),
+        item( 61577, "Lawbringer Leggings"),
+        item( 61578, "Lawbringer Gloves"),
+        item( 61579, "Lawbringer Boots"),
+    }),
+    boss("Lawbringer Set - Prot", {
+        item( 61580, "Lawbringer Faceguard"),
+        item( 61581, "Lawbringer Shoulderguards"),
+        item( 61582, "Lawbringer Chestguard"),
+        item( 61583, "Lawbringer Legguards"),
+        item( 61584, "Lawbringer Handguards"),
+        item( 61585, "Lawbringer Sabatons"),
+    }),
+    boss("Lawbringer Set - Ret", {
+        item( 61586, "Lawbringer Crown"),
+        item( 61587, "Lawbringer Shoulderplates"),
+        item( 61588, "Lawbringer Breastplate"),
+        item( 61589, "Lawbringer Greaves"),
+        item( 61590, "Lawbringer Gauntlets"),
+        item( 61591, "Lawbringer Pads"),
+    }),
+}, "set")
+
+-- =====================================================================
+zone("Epoch Sets - Prophecy (Priest T1.5)", {
+    boss("Prophecy Set - Shadow", {
+        item( 61592, "Circlet of Prophecy"),
+        item( 61593, "Light-Mantle of Prophecy"),
+        item( 61594, "Robes of Prophecy"),
+        item( 61595, "Trousers of Prophecy"),
+        item( 61596, "Handwraps of Prophecy"),
+        item( 61597, "Boots of Prophecy"),
+    }),
+    boss("Prophecy Set - Holy", {
+        item( 61598, "Wreath of Prophecy"),
+        item( 61599, "Soul-Mantle of Prophecy"),
+        item( 61600, "Shroud of Prophecy"),
+        item( 61601, "Leggings of Prophecy"),
+        item( 61602, "Gloves of Prophecy"),
+        item( 61603, "Galoshes of Prophecy"),
+    }),
+}, "set")
+
+-- =====================================================================
+zone("Epoch Sets - Nightslayer (Rogue T1.5)", {
+    boss("Nightslayer Set", {
+        item( 61604, "Nightslayer Cover"),
+        item( 61605, "Nightslayer Shoulder Pads"),
+        item( 61606, "Nightslayer Chestpiece"),
+        item( 61607, "Nightslayer Pants"),
+        item( 61608, "Nightslayer Gloves"),
+        item( 61609, "Nightslayer Boots"),
+    }),
+}, "set")
+
+-- =====================================================================
+zone("Epoch Sets - Earthfury (Shaman T1.5)", {
+    boss("Earthfury Set - Elemental", {
+        item( 61610, "Earthfury Faceguard"),
+        item( 61611, "Earthfury Shoulderguards"),
+        item( 61612, "Earthfury Chestguard"),
+        item( 61613, "Earthfury Legguards"),
+        item( 61614, "Earthfury Handguards"),
+        item( 61615, "Earthfury Boots"),
+    }),
+    boss("Earthfury Set - Enhancement", {
+        item( 61616, "Earthfury Helm"),
+        item( 61617, "Earthfury Shoulderplates"),
+        item( 61618, "Earthfury Breastplate"),
+        item( 61619, "Earthfury War-Kilt"),
+        item( 61620, "Earthfury Gauntlets"),
+        item( 61621, "Earthfury Sabatons"),
+    }),
+    boss("Earthfury Set - Resto", {
+        item( 61622, "Earthfury Headdress"),
+        item( 61623, "Earthfury Shoulderpads"),
+        item( 61624, "Earthfury Hauberk"),
+        item( 61625, "Earthfury Kilt"),
+        item( 61626, "Earthfury Gloves"),
+        item( 61627, "Earthfury Pads"),
+    }),
+}, "set")
+
+-- =====================================================================
+zone("Epoch Sets - Felheart (Warlock T1.5)", {
+    boss("Felheart Set", {
+        item( 61629, "Felheart Horns"),
+        item( 61632, "Felheart Shoulder Pads"),
+        item( 61631, "Felheart Robes"),
+        item( 61630, "Felheart Pants"),
+        item( 61628, "Felheart Gloves"),
+        item( 61633, "Felheart Slippers"),
+    }),
+}, "set")
+
+-- =====================================================================
+zone("Epoch Sets - Might (Warrior T1.5)", {
+    boss("Battlegear of Might - Fury", {
+        item( 61634, "Battle-Helm of Might"),
+        item( 61635, "Shoulderplates of Might"),
+        item( 61636, "Breastplate of Might"),
+        item( 61637, "Greaves of Might"),
+        item( 61638, "Gauntlets of Might"),
+        item( 61639, "Sabatons of Might"),
+    }),
+    boss("Battlegear of Might - Prot", {
+        item( 61640, "Greathelm of Might"),
+        item( 61641, "Shoulderguards of Might"),
+        item( 61642, "Chestguard of Might"),
+        item( 61643, "Legguards of Might"),
+        item( 61644, "Handguards of Might"),
+        item( 61645, "Sollerets of Might"),
+    }),
+}, "set")
+
+-- =====================================================================
+zone("PvP - Rookie (Level 15)", {
+    boss("Rookie's Cloth", {
+        item( 60851, "Rookie's Hood"),
+        item( 60852, "Rookie's Mantle"),
+        item( 60853, "Rookie's Robe"),
+        item( 60854, "Rookie's Handcloth"),
+        item( 60855, "Rookie's Leggings"),
+        item( 60856, "Rookie's Slippers"),
+        item( 60857, "Rookie's Wristwraps"),
+        item( 60858, "Rookie's Waistband"),
+        item( 60859, "Rookie's Cloche"),
+        item( 60860, "Rookie's Pads"),
+        item( 60861, "Rookie's Leather"),
+        item( 60862, "Rookie's Mitts"),
+        item( 60863, "Rookie's Pantaloons"),
+        item( 60864, "Rookie's Bootlets"),
+        item( 60865, "Rookie's Armguards"),
+        item( 60866, "Rookie's Strap"),
+    }),
+    boss("Rookie's Mail/Plate", {
+        item( 60875, "Rookie's Coif"),
+        item( 60876, "Rookie's Chaindrapes"),
+        item( 60877, "Rookie's Links"),
+        item( 60878, "Rookie's Demi-gaunts"),
+        item( 60879, "Rookie's Leglinks"),
+        item( 60880, "Rookie's Bootlinks"),
+        item( 60881, "Rookie's Wrists"),
+        item( 60882, "Rookie's Buckle"),
+        item( 60867, "Rookie's Cap"),
+        item( 60868, "Rookie's Shoulders"),
+        item( 60869, "Rookie's Tunic"),
+        item( 60870, "Rookie's Gloves"),
+        item( 60871, "Rookie's Pants"),
+        item( 60872, "Rookie's Boots"),
+        item( 60873, "Rookie's Cuffs"),
+        item( 60874, "Rookie's Belt"),
+        item( 60883, "Rookie's Helm"),
+        item( 60884, "Rookie's Shoulderguards"),
+        item( 60885, "Rookie's Chainmail"),
+        item( 60886, "Rookie's Handguards"),
+        item( 60887, "Rookie's Legguards"),
+        item( 60888, "Rookie's Treads"),
+        item( 60889, "Rookie's Bracers"),
+        item( 60890, "Rookie's Cinch"),
+    }),
+    boss("Rookie's Weapons", {
+        item( 60911, "Rookie's Dagger"),
+        item( 60912, "Rookie's Hatchet"),
+        item( 60913, "Rookie's Mallet"),
+        item( 60914, "Rookie's Saber"),
+        item( 60915, "Rookie's Claw"),
+        item( 60916, "Rookie's Spellblade"),
+        item( 60917, "Rookie's Frill"),
+        item( 60918, "Rookie's Spellfist"),
+        item( 60919, "Rookie's Spellhammer"),
+        item( 60920, "Rookie's Spellsword"),
+        item( 60921, "Rookie's Staff"),
+        item( 60926, "Rookie's Battleaxe"),
+        item( 60927, "Rookie's Maul"),
+        item( 60928, "Rookie's Greatsword"),
+        item( 60929, "Rookie's Spellshield"),
+        item( 60930, "Rookie's Shield"),
+        item( 60931, "Rookie's Axe"),
+        item( 60932, "Rookie's Mace"),
+        item( 60933, "Rookie's Sword"),
+        item( 60934, "Rookie's Knuckles"),
+        item( 60922, "Rookie's Rifle"),
+        item( 60923, "Rookie's Bow"),
+        item( 60924, "Rookie's Crossbow"),
+        item( 60925, "Rookie's Knives"),
+        item( 60935, "Rookie's Frostflinger"),
+        item( 60936, "Rookie's Firestick"),
+        item( 60937, "Rookie's Shadowthrower"),
+        item( 60938, "Rookie's Arcane Wand"),
+        item( 60939, "Rookie's Lightning Rod"),
+    }),
+    boss("Rookie's Accessories", {
+        item( 60907, "Rookie's Band of Physical Potency"),
+        item( 60906, "Rookie's Band of Physical Cruelty"),
+        item( 60905, "Rookie's Band of Physical Accuracy"),
+        item( 60904, "Rookie's Band of Magic Potency"),
+        item( 60903, "Rookie's Band of Magic Cruelty"),
+        item( 60902, "Rookie's Band of Magic Accuracy"),
+        item( 60901, "Rookie's Band of Survival"),
+        item( 60900, "Rookie's Amulet of Agility"),
+        item( 60899, "Rookie's Amulet of Strength"),
+        item( 60898, "Rookie's Amulet of Spellcasting"),
+        item( 60897, "Rookie's Cloak of Physical Potency"),
+        item( 60896, "Rookie's Cloak of Physical Cruelty"),
+        item( 60895, "Rookie's Cloak of Physical Accuracy"),
+        item( 60894, "Rookie's Cloak of Magic Potency"),
+        item( 60893, "Rookie's Cloak of Magic Cruelty"),
+        item( 60892, "Rookie's Cloak of Magic Accuracy"),
+        item( 60891, "Rookie's Cloak of Survival"),
+        item( 60910, "Rookie's Emblem of Tenacity"),
+        item( 60909, "Rookie's Insignia of the Alliance"),
+        item( 60908, "Rookie's Insignia of the Horde"),
+    }),
+}, "set")
+
+-- =====================================================================
+zone("PvP - Skirmisher (Level 25)", {
+    boss("Skirmisher's Armor", {
+        item( 60940, "Skirmisher's Hood"),
+        item( 60941, "Skirmisher's Mantle"),
+        item( 60942, "Skirmisher's Robe"),
+        item( 60943, "Skirmisher's Handcloth"),
+        item( 60944, "Skirmisher's Leggings"),
+        item( 60945, "Skirmisher's Slippers"),
+        item( 60946, "Skirmisher's Wristwraps"),
+        item( 60947, "Skirmisher's Waistband"),
+        item( 60948, "Skirmisher's Cowl"),
+        item( 60949, "Skirmisher's Stole"),
+        item( 60950, "Skirmisher's Raiment"),
+        item( 60951, "Skirmisher's Hands"),
+        item( 60952, "Skirmisher's Legwarmers"),
+        item( 60953, "Skirmisher's Bootlets"),
+        item( 60954, "Skirmisher's Braceletts"),
+        item( 60955, "Skirmisher's Sash"),
+        item( 60956, "Skirmisher's Cloche"),
+        item( 60957, "Skirmisher's Pads"),
+        item( 60958, "Skirmisher's Leather"),
+        item( 60959, "Skirmisher's Mitts"),
+        item( 60960, "Skirmisher's Pantaloons"),
+        item( 60961, "Skirmisher's Riders"),
+        item( 60962, "Skirmisher's Armguards"),
+        item( 60963, "Skirmisher's Strap"),
+        item( 60964, "Skirmisher's Casque"),
+        item( 60965, "Skirmisher's Rerebrace"),
+        item( 60966, "Skirmisher's Cuirass"),
+        item( 60967, "Skirmisher's Palms"),
+        item( 60968, "Skirmisher's Breeches"),
+        item( 60969, "Skirmisher's Soles"),
+        item( 60970, "Skirmisher's Leather Cuffs"),
+        item( 60971, "Skirmisher's Leather Belt"),
+        item( 60972, "Skirmisher's Cap"),
+        item( 60973, "Skirmisher's Shoulders"),
+        item( 60974, "Skirmisher's Tunic"),
+        item( 60975, "Skirmisher's Gloves"),
+        item( 60976, "Skirmisher's Pants"),
+        item( 60977, "Skirmisher's Boots"),
+        item( 60978, "Skirmisher's Cuffs"),
+        item( 60979, "Skirmisher's Belt"),
+        item( 60980, "Skirmisher's Coif"),
+        item( 60981, "Skirmisher's Chaindrapes"),
+        item( 60982, "Skirmisher's Links"),
+        item( 60983, "Skirmisher's Demi-gaunts"),
+        item( 60984, "Skirmisher's Leglinks"),
+        item( 60985, "Skirmisher's Bootlinks"),
+        item( 60986, "Skirmisher's Wrists"),
+        item( 60987, "Skirmisher's Buckle"),
+        item( 60988, "Skirmisher's Chain Cloche"),
+        item( 60989, "Skirmisher's Light Pauldrons"),
+        item( 60990, "Skirmisher's Hauberk"),
+        item( 60991, "Skirmisher's Grips"),
+        item( 60992, "Skirmisher's Kilt"),
+        item( 60993, "Skirmisher's Stompers"),
+        item( 60994, "Skirmisher's Manacles"),
+        item( 60995, "Skirmisher's Chain"),
+        item( 60996, "Skirmisher's Helm"),
+        item( 60997, "Skirmisher's Shoulderguards"),
+        item( 60998, "Skirmisher's Chainmail"),
+        item( 60999, "Skirmisher's Handguards"),
+        item( 61000, "Skirmisher's Legguards"),
+        item( 61001, "Skirmisher's Treads"),
+        item( 61002, "Skirmisher's Bracers"),
+        item( 61003, "Skirmisher's Cinch"),
+    }),
+    boss("Skirmisher's Weapons", {
+        item( 61024, "Skirmisher's Dagger"),
+        item( 61025, "Skirmisher's Hatchet"),
+        item( 61026, "Skirmisher's Mallet"),
+        item( 61027, "Skirmisher's Saber"),
+        item( 61028, "Skirmisher's Claw"),
+        item( 61029, "Skirmisher's Spellblade"),
+        item( 61030, "Skirmisher's Frill"),
+        item( 61031, "Skirmisher's Spellfist"),
+        item( 61032, "Skirmisher's Spellhammer"),
+        item( 61033, "Skirmisher's Spellsword"),
+        item( 61034, "Skirmisher's Staff"),
+        item( 61039, "Skirmisher's Battleaxe"),
+        item( 61040, "Skirmisher's Maul"),
+        item( 61041, "Skirmisher's Greatsword"),
+        item( 61042, "Skirmisher's Spellshield"),
+        item( 61043, "Skirmisher's Shield"),
+        item( 61044, "Skirmisher's Axe"),
+        item( 61045, "Skirmisher's Mace"),
+        item( 61046, "Skirmisher's Sword"),
+        item( 61047, "Skirmisher's Knuckles"),
+        item( 61035, "Skirmisher's Rifle"),
+        item( 61036, "Skirmisher's Bow"),
+        item( 61037, "Skirmisher's Crossbow"),
+        item( 61038, "Skirmisher's Knives"),
+        item( 61048, "Skirmisher's Frostflinger"),
+        item( 61049, "Skirmisher's Firestick"),
+        item( 61050, "Skirmisher's Shadowthrower"),
+        item( 61051, "Skirmisher's Arcane Wand"),
+        item( 61052, "Skirmisher's Lightning Rod"),
+    }),
+    boss("Skirmisher's Accessories", {
+        item( 61020, "Skirmisher's Band of Physical Potency"),
+        item( 61019, "Skirmisher's Band of Physical Cruelty"),
+        item( 61018, "Skirmisher's Band of Physical Accuracy"),
+        item( 61017, "Skirmisher's Band of Magic Potency"),
+        item( 61016, "Skirmisher's Band of Magic Cruelty"),
+        item( 61015, "Skirmisher's Band of Magic Accuracy"),
+        item( 61014, "Skirmisher's Band of Survival"),
+        item( 61013, "Skirmisher's Amulet of Agility"),
+        item( 61012, "Skirmisher's Amulet of Strength"),
+        item( 61011, "Skirmisher's Amulet of Spellcasting"),
+        item( 61010, "Skirmisher's Cloak of Physical Potency"),
+        item( 61009, "Skirmisher's Cloak of Physical Cruelty"),
+        item( 61008, "Skirmisher's Cloak of Physical Accuracy"),
+        item( 61007, "Skirmisher's Cloak of Magic Potency"),
+        item( 61006, "Skirmisher's Cloak of Magic Cruelty"),
+        item( 61005, "Skirmisher's Cloak of Magic Accuracy"),
+        item( 61004, "Skirmisher's Cloak of Survival"),
+        item( 61023, "Skirmisher's Emblem of Tenacity"),
+        item( 61022, "Skirmisher's Insignia of the Alliance"),
+        item( 61021, "Skirmisher's Insignia of the Horde"),
+    }),
+}, "set")
+
+-- =====================================================================
+zone("PvP - Combatant (Level 35)", {
+    boss("Combatant's Armor", {
+        item( 61053, "Combatant's Hood"),
+        item( 61054, "Combatant's Mantle"),
+        item( 61055, "Combatant's Robe"),
+        item( 61056, "Combatant's Handcloth"),
+        item( 61057, "Combatant's Leggings"),
+        item( 61058, "Combatant's Slippers"),
+        item( 61059, "Combatant's Wristwraps"),
+        item( 61060, "Combatant's Waistband"),
+        item( 61061, "Combatant's Cowl"),
+        item( 61062, "Combatant's Stole"),
+        item( 61063, "Combatant's Raiment"),
+        item( 61064, "Combatant's Hands"),
+        item( 61065, "Combatant's Legwarmers"),
+        item( 61066, "Combatant's Bootlets"),
+        item( 61067, "Combatant's Braceletts"),
+        item( 61068, "Combatant's Sash"),
+        item( 61069, "Combatant's Cloche"),
+        item( 61070, "Combatant's Pads"),
+        item( 61071, "Combatant's Leather"),
+        item( 61072, "Combatant's Mitts"),
+        item( 61073, "Combatant's Pantaloons"),
+        item( 61074, "Combatant's Riders"),
+        item( 61075, "Combatant's Armguards"),
+        item( 61076, "Combatant's Strap"),
+        item( 61078, "Combatant's Casque"),
+        item( 61079, "Combatant's Rerebrace"),
+        item( 61080, "Combatant's Cuirass"),
+        item( 61081, "Combatant's Palms"),
+        item( 61082, "Combatant's Breeches"),
+        item( 61083, "Combatant's Soles"),
+        item( 61084, "Combatant's Leather Cuffs"),
+        item( 61085, "Combatant's Leather Belt"),
+        item( 61086, "Combatant's Shoulders"),
+        item( 61087, "Combatant's Tunic"),
+        item( 61088, "Combatant's Gloves"),
+        item( 61089, "Combatant's Pants"),
+        item( 61090, "Combatant's Boots"),
+        item( 61091, "Combatant's Cuffs"),
+        item( 61092, "Combatant's Belt"),
+        item( 61093, "Combatant's Coif"),
+        item( 61094, "Combatant's Chaindrapes"),
+        item( 61095, "Combatant's Links"),
+        item( 61096, "Combatant's Demi-gaunts"),
+        item( 61097, "Combatant's Leglinks"),
+        item( 61098, "Combatant's Bootlinks"),
+        item( 61099, "Combatant's Wrists"),
+        item( 61100, "Combatant's Buckle"),
+        item( 61101, "Combatant's Chain Cloche"),
+        item( 61102, "Combatant's Light Pauldrons"),
+        item( 61103, "Combatant's Hauberk"),
+        item( 61104, "Combatant's Grips"),
+        item( 61105, "Combatant's Kilt"),
+        item( 61106, "Combatant's Stompers"),
+        item( 61107, "Combatant's Manacles"),
+        item( 61108, "Combatant's Chain"),
+        item( 61109, "Combatant's Helm"),
+        item( 61110, "Combatant's Shoulderguards"),
+        item( 61111, "Combatant's Chainmail"),
+        item( 61112, "Combatant's Handguards"),
+        item( 61113, "Combatant's Legguards"),
+        item( 61114, "Combatant's Treads"),
+        item( 61115, "Combatant's Bracers"),
+        item( 61116, "Combatant's Cinch"),
+    }),
+    boss("Combatant's Weapons", {
+        item( 61146, "Combatant's Dagger"),
+        item( 61147, "Combatant's Hatchet"),
+        item( 61148, "Combatant's Mallet"),
+        item( 61149, "Combatant's Saber"),
+        item( 61150, "Combatant's Claw"),
+        item( 61151, "Combatant's Spellblade"),
+        item( 61152, "Combatant's Medical Knife"),
+        item( 61153, "Combatant's Frill"),
+        item( 61154, "Combatant's Tome"),
+        item( 61155, "Combatant's Staff"),
+        item( 61156, "Combatant's Stave"),
+        item( 61157, "Combatant's Spellfist"),
+        item( 61158, "Combatant's Spellhammer"),
+        item( 61159, "Combatant's Spellsword"),
+        item( 61160, "Combatant's Healing Knuckles"),
+        item( 61161, "Combatant's Scepter"),
+        item( 61162, "Combatant's Brand"),
+        item( 61167, "Combatant's Battleaxe"),
+        item( 61168, "Combatant's Maul"),
+        item( 61169, "Combatant's Greatsword"),
+        item( 61170, "Combatant's Spellshield"),
+        item( 61171, "Combatant's Shield"),
+        item( 61172, "Combatant's Protector"),
+        item( 61173, "Combatant's Axe"),
+        item( 61174, "Combatant's Mace"),
+        item( 61175, "Combatant's Sword"),
+        item( 61176, "Combatant's Knuckles"),
+        item( 61163, "Combatant's Rifle"),
+        item( 61164, "Combatant's Bow"),
+        item( 61165, "Combatant's Crossbow"),
+        item( 61166, "Combatant's Knives"),
+        item( 61177, "Combatant's Frostflinger"),
+        item( 61178, "Combatant's Firestick"),
+        item( 61179, "Combatant's Shadowthrower"),
+        item( 61180, "Combatant's Arcane Wand"),
+        item( 61181, "Combatant's Lightning Rod"),
+    }),
+    boss("Combatant's Accessories", {
+        item( 61136, "Combatant's Band of Physical Potency"),
+        item( 61135, "Combatant's Band of Physical Cruelty"),
+        item( 61134, "Combatant's Band of Physical Accuracy"),
+        item( 61133, "Combatant's Band of Meditation"),
+        item( 61132, "Combatant's Band of Magic Potency"),
+        item( 61131, "Combatant's Band of Magic Cruelty"),
+        item( 61130, "Combatant's Band of Magic Accuracy"),
+        item( 61129, "Combatant's Band of Survival"),
+        item( 61127, "Combatant's Amulet of Agility"),
+        item( 61126, "Combatant's Amulet of Strength"),
+        item( 61125, "Combatant's Amulet of Spellcasting"),
+        item( 61128, "Combatant's Amulet of Meditation"),
+        item( 61124, "Combatant's Cloak of Physical Potency"),
+        item( 61123, "Combatant's Cloak of Physical Cruelty"),
+        item( 61122, "Combatant's Cloak of Physical Accuracy"),
+        item( 61121, "Combatant's Cloak of Meditation"),
+        item( 61120, "Combatant's Cloak of Magic Potency"),
+        item( 61119, "Combatant's Cloak of Magic Cruelty"),
+        item( 61118, "Combatant's Cloak of Magic Accuracy"),
+        item( 61117, "Combatant's Cloak of Survival"),
+        item( 61139, "Combatant's Emblem of Tenacity"),
+        item( 61138, "Combatant's Insignia of the Alliance"),
+        item( 61137, "Combatant's Insignia of the Horde"),
+    }),
+}, "set")
+
+-- =====================================================================
+zone("PvP - Aspirant (Level 45)", {
+    boss("Aspirant's Armor", {
+        item( 61182, "Aspirant's Hood"),
+        item( 61183, "Aspirant's Mantle"),
+        item( 61184, "Aspirant's Robe"),
+        item( 61185, "Aspirant's Handcloth"),
+        item( 61186, "Aspirant's Leggings"),
+        item( 61187, "Aspirant's Slippers"),
+        item( 61188, "Aspirant's Wristwraps"),
+        item( 61189, "Aspirant's Waistband"),
+        item( 61190, "Aspirant's Cowl"),
+        item( 61191, "Aspirant's Stole"),
+        item( 61192, "Aspirant's Raiment"),
+        item( 61193, "Aspirant's Hands"),
+        item( 61194, "Aspirant's Legwarmers"),
+        item( 61195, "Aspirant's Bootlets"),
+        item( 61196, "Aspirant's Braceletts"),
+        item( 61197, "Aspirant's Sash"),
+        item( 61198, "Aspirant's Cloche"),
+        item( 61199, "Aspirant's Pads"),
+        item( 61200, "Aspirant's Leather"),
+        item( 61201, "Aspirant's Mitts"),
+        item( 61202, "Aspirant's Pantaloons"),
+        item( 61203, "Aspirant's Riders"),
+        item( 61204, "Aspirant's Armguards"),
+        item( 61205, "Aspirant's Strap"),
+        item( 61206, "Aspirant's Casque"),
+        item( 61207, "Aspirant's Rerebrace"),
+        item( 61208, "Aspirant's Cuirass"),
+        item( 61209, "Aspirant's Palms"),
+        item( 61210, "Aspirant's Breeches"),
+        item( 61211, "Aspirant's Soles"),
+        item( 61212, "Aspirant's Leather Cuffs"),
+        item( 61213, "Aspirant's Leather Belt"),
+        item( 61214, "Aspirant's Cap"),
+        item( 61215, "Aspirant's Shoulders"),
+        item( 61216, "Aspirant's Tunic"),
+        item( 61217, "Aspirant's Gloves"),
+        item( 61218, "Aspirant's Pants"),
+        item( 61219, "Aspirant's Boots"),
+        item( 61220, "Aspirant's Cuffs"),
+        item( 61221, "Aspirant's Belt"),
+        item( 61222, "Aspirant's Skullcap"),
+        item( 61223, "Aspirant's Shoulderlinks"),
+        item( 61224, "Aspirant's Haubergeon"),
+        item( 61225, "Aspirant's Chain Gloves"),
+        item( 61226, "Aspirant's Chausses"),
+        item( 61227, "Aspirant's Waders"),
+        item( 61228, "Aspirant's Ringed Armguards"),
+        item( 61229, "Aspirant's Mail Belt"),
+        item( 61230, "Aspirant's Coif"),
+        item( 61231, "Aspirant's Chaindrapes"),
+        item( 61232, "Aspirant's Links"),
+        item( 61233, "Aspirant's Demi-gaunts"),
+        item( 61234, "Aspirant's Leglinks"),
+        item( 61235, "Aspirant's Bootlinks"),
+        item( 61236, "Aspirant's Wrists"),
+        item( 61237, "Aspirant's Buckle"),
+        item( 61238, "Aspirant's Chain Cloche"),
+        item( 61239, "Aspirant's Light Pauldrons"),
+        item( 61240, "Aspirant's Hauberk"),
+        item( 61241, "Aspirant's Grips"),
+        item( 61242, "Aspirant's Kilt"),
+        item( 61243, "Aspirant's Stompers"),
+        item( 61244, "Aspirant's Manacles"),
+        item( 61245, "Aspirant's Chain"),
+        item( 61246, "Aspirant's Helm"),
+        item( 61247, "Aspirant's Shoulderguards"),
+        item( 61248, "Aspirant's Chainmail"),
+        item( 61249, "Aspirant's Handguards"),
+        item( 61250, "Aspirant's Legguards"),
+        item( 61251, "Aspirant's Treads"),
+        item( 61252, "Aspirant's Bracers"),
+        item( 61253, "Aspirant's Cinch"),
+        item( 61274, "Aspirant's Dome"),
+        item( 61275, "Aspirant's Platepads"),
+        item( 61276, "Aspirant's Breastplate"),
+        item( 61277, "Aspirant's Plated Fists"),
+        item( 61278, "Aspirant's Plate Pants"),
+        item( 61279, "Aspirant's Sabatons"),
+        item( 61280, "Aspirant's Wristguards"),
+        item( 61281, "Aspirant's Girdle"),
+        item( 61282, "Aspirant's Helmet"),
+        item( 61283, "Aspirant's Shoulderplates"),
+        item( 61284, "Aspirant's Chestplate"),
+        item( 61285, "Aspirant's Gauntlets"),
+        item( 61286, "Aspirant's Legplates"),
+        item( 61287, "Aspirant's Greaves"),
+        item( 61288, "Aspirant's Armplates"),
+        item( 61289, "Aspirant's Waistguard"),
+    }),
+    boss("Aspirant's Weapons", {
+        item( 61305, "Aspirant's Dagger"),
+        item( 61306, "Aspirant's Hatchet"),
+        item( 61307, "Aspirant's Mallet"),
+        item( 61308, "Aspirant's Saber"),
+        item( 61309, "Aspirant's Claw"),
+        item( 61310, "Aspirant's Spellblade"),
+        item( 61311, "Aspirant's Medical Knife"),
+        item( 61312, "Aspirant's Frill"),
+        item( 61313, "Aspirant's Tome"),
+        item( 61314, "Aspirant's Staff"),
+        item( 61315, "Aspirant's Stave"),
+        item( 61316, "Aspirant's Spellfist"),
+        item( 61317, "Aspirant's Spellhammer"),
+        item( 61318, "Aspirant's Spellsword"),
+        item( 61319, "Aspirant's Healing Knuckles"),
+        item( 61320, "Aspirant's Scepter"),
+        item( 61321, "Aspirant's Brand"),
+        item( 61326, "Aspirant's Battleaxe"),
+        item( 61327, "Aspirant's Maul"),
+        item( 61328, "Aspirant's Greatsword"),
+        item( 61329, "Aspirant's Spellshield"),
+        item( 61330, "Aspirant's Shield"),
+        item( 61331, "Aspirant's Protector"),
+        item( 61332, "Aspirant's Axe"),
+        item( 61333, "Aspirant's Mace"),
+        item( 61334, "Aspirant's Sword"),
+        item( 61335, "Aspirant's Knuckles"),
+        item( 61322, "Aspirant's Rifle"),
+        item( 61323, "Aspirant's Bow"),
+        item( 61324, "Aspirant's Crossbow"),
+        item( 61325, "Aspirant's Knives"),
+        item( 61336, "Aspirant's Frostflinger"),
+        item( 61337, "Aspirant's Firestick"),
+        item( 61338, "Aspirant's Shadowthrower"),
+        item( 61339, "Aspirant's Arcane Wand"),
+        item( 61340, "Aspirant's Lightning Rod"),
+    }),
+    boss("Aspirant's Accessories", {
+        item( 61304, "Aspirant's Emblem of Renewal"),
+        item( 61303, "Aspirant's Emblem of Upturn"),
+        item( 61302, "Aspirant's Emblem of Power"),
+        item( 61301, "Aspirant's Emblem of Alacrity"),
+        item( 61300, "Aspirant's Emblem of Dominance"),
+        item( 61299, "Aspirant's Emblem of Betterment"),
+        item( 61298, "Aspirant's Emblem of Cogitation"),
+        item( 61297, "Aspirant's Emblem of Magick"),
+        item( 61296, "Aspirant's Emblem of Ferocity"),
+        item( 61295, "Aspirant's Emblem of Vigor"),
+        item( 61292, "Aspirant's Emblem of Tenacity"),
+        item( 61294, "Aspirant's Insignia of Relentlessness"),
+        item( 61293, "Aspirant's Insignia of Adaptation"),
+        item( 61291, "Aspirant's Insignia of the Alliance"),
+        item( 61290, "Aspirant's Insignia of the Horde"),
+        item( 61273, "Aspirant's Band of Physical Potency"),
+        item( 61272, "Aspirant's Band of Physical Cruelty"),
+        item( 61271, "Aspirant's Band of Physical Accuracy"),
+        item( 61270, "Aspirant's Band of Meditation"),
+        item( 61269, "Aspirant's Band of Magic Potency"),
+        item( 61268, "Aspirant's Band of Magic Cruelty"),
+        item( 61267, "Aspirant's Band of Magic Accuracy"),
+        item( 61266, "Aspirant's Band of Survival"),
+        item( 61261, "Cloak of Physical Potency"),
+        item( 61260, "Cloak of Physical Cruelty"),
+        item( 61259, "Cloak of Physical Accuracy"),
+        item( 61258, "Cloak of Meditation"),
+        item( 61257, "Cloak of Magic Potency"),
+        item( 61256, "Cloak of Magic Cruelty"),
+        item( 61255, "Cloak of Magic Accuracy"),
+        item( 61254, "Cloak of Survival"),
+        item( 61265, "Amulet of Meditation"),
+        item( 61264, "Amulet of Agility"),
+        item( 61263, "Amulet of Strength"),
+        item( 61262, "Amulet of Spellcasting"),
+    }),
+}, "set")
+
+-- =====================================================================
+zone("PvP - Soldier (Level 55)", {
+    boss("Soldier's Weapons", {
+        item( 61498, "Soldier's Dagger"),
+        item( 61499, "Soldier's Hatchet"),
+        item( 61500, "Soldier's Mallet"),
+        item( 61501, "Soldier's Saber"),
+        item( 61502, "Soldier's Claw"),
+        item( 61503, "Soldier's Spellblade"),
+        item( 61504, "Soldier's Medical Knife"),
+        item( 61505, "Soldier's Frill"),
+        item( 61506, "Soldier's Tome"),
+        item( 61507, "Soldier's Staff"),
+        item( 61508, "Soldier's Stave"),
+        item( 61509, "Soldier's Spellfist"),
+        item( 61510, "Soldier's Spellhammer"),
+        item( 61511, "Soldier's Spellsword"),
+        item( 61512, "Soldier's Healing Knuckles"),
+        item( 61513, "Soldier's Scepter"),
+        item( 61514, "Soldier's Brand"),
+        item( 61521, "Soldier's Battleaxe"),
+        item( 61522, "Soldier's Maul"),
+        item( 61523, "Soldier's Greatsword"),
+        item( 61524, "Soldier's Spellshield"),
+        item( 61525, "Soldier's Shield"),
+        item( 61526, "Soldier's Protector"),
+        item( 61527, "Soldier's Axe"),
+        item( 61528, "Soldier's Mace"),
+        item( 61529, "Soldier's Sword"),
+        item( 61530, "Soldier's Knuckles"),
+        item( 61515, "Soldier's Idol"),
+        item( 61516, "Soldier's Libram"),
+        item( 61517, "Soldier's Rifle"),
+        item( 61518, "Soldier's Bow"),
+        item( 61519, "Soldier's Crossbow"),
+        item( 61520, "Soldier's Knives"),
+        item( 61531, "Soldier's Totem"),
+        item( 61532, "Soldier's Frostflinger"),
+        item( 61533, "Soldier's Firestick"),
+        item( 61534, "Soldier's Shadowthrower"),
+        item( 61535, "Soldier's Arcane Wand"),
+        item( 61536, "Soldier's Lightning Rod"),
+    }),
+    boss("Soldier's Accessories", {
+        item( 61495, "Emblem of Renewal"),
+        item( 61494, "Emblem of Upturn"),
+        item( 61493, "Emblem of Power"),
+        item( 61492, "Emblem of Alacrity"),
+        item( 61491, "Emblem of Dominance"),
+        item( 61490, "Emblem of Betterment"),
+        item( 61489, "Emblem of Cogitation"),
+        item( 61488, "Emblem of Magick"),
+        item( 61487, "Emblem of Ferocity"),
+        item( 61486, "Emblem of Vigor"),
+        item( 61485, "Emblem of Tenacity"),
+        item( 61144, "Insignia of Relentlessness"),
+        item( 61142, "Insignia of Adaptation"),
+        item( 61141, "Insignia of the Alliance"),
+        item( 61140, "Insignia of the Horde"),
+        item( 61460, "Band of Physical Potency"),
+        item( 61459, "Band of Physical Crit"),
+        item( 61458, "Band of Physical Accuracy"),
+        item( 61457, "Band of Magic Potency"),
+        item( 61456, "Band of Magic Cruelty"),
+        item( 61455, "Band of Magic Accuracy"),
+        item( 61454, "Band of Survival"),
+        item( 61453, "Band of Meditation"),
+        item( 61452, "Amulet of Spellcasting"),
+        item( 90500, "Amulet of Strength"),
+        item( 90501, "Amulet of Agility"),
+        item( 90502, "Amulet of Meditation"),
+        item( 61450, "Cloak of Physical Potency"),
+        item( 61449, "Cloak of Physical Cruelty"),
+        item( 61448, "Cloak of Physical Accuracy"),
+        item( 61447, "Cloak of Magic Potency"),
+        item( 61446, "Cloak of Magic Cruelty"),
+        item( 61445, "Cloak of Magic Accuracy"),
+        item( 61444, "Cloak of Survival"),
+        item( 61443, "Cloak of Meditation"),
+    }),
+    boss("Battlemage's Regalia", {
+        item( 61349, "Battlemage Crown"),
+        item( 61350, "Battlemage Mantle"),
+        item( 61351, "Battlemage Robe"),
+        item( 61352, "Battlemage Gloves"),
+        item( 61353, "Battlemage Leggings"),
+        item( 61354, "Battlemage Boots"),
+    }),
+    boss("Divined Vestments", {
+        item( 61355, "Divined Crown"),
+        item( 61356, "Divined Mantle"),
+        item( 61357, "Divined Robe"),
+        item( 61358, "Divined Gloves"),
+        item( 61359, "Divined Skirt"),
+        item( 61360, "Divined Sandals"),
+    }),
+    boss("Vanta Vestments", {
+        item( 61361, "Vanta Mask"),
+        item( 61362, "Vanta Mantle"),
+        item( 61363, "Vanta Robe"),
+        item( 61364, "Vanta Wraps"),
+        item( 61365, "Vanta Leggings"),
+        item( 61366, "Vanta Sandals"),
+    }),
+    boss("Shadowcaster's Regalia", {
+        item( 61367, "Shadowcaster Mask"),
+        item( 61368, "Shadowcaster Mantle"),
+        item( 61369, "Shadowcaster Robe"),
+        item( 61370, "Shadowcaster Wraps"),
+        item( 61371, "Shadowcaster Leggings"),
+        item( 61372, "Shadowcaster Sandals"),
+    }),
+    boss("Afflictor's Regalia", {
+        item( 61373, "Afflictor Mask"),
+        item( 61374, "Afflictor Mantle"),
+        item( 61375, "Afflictor Robe"),
+        item( 61376, "Afflictor Wraps"),
+        item( 61377, "Afflictor Leggings"),
+        item( 61378, "Afflictor Sandals"),
+    }),
+    boss("Animalistic Armor", {
+        item( 61379, "Animalistic Cowl"),
+        item( 61380, "Animalistic Spaulders"),
+        item( 61381, "Animalistic Vest"),
+        item( 61382, "Animalistic Gloves"),
+        item( 61383, "Animalistic Kilt"),
+        item( 61384, "Animalistic Boots"),
+    }),
+    boss("Astral Armor", {
+        item( 61385, "Astral Cowl"),
+        item( 61386, "Astral Spaulders"),
+        item( 61387, "Astral Vest"),
+        item( 61388, "Astral Gloves"),
+        item( 61389, "Astral Kilt"),
+        item( 61390, "Astral Boots"),
+    }),
+    boss("Barking Armor", {
+        item( 61391, "Barking Cowl"),
+        item( 61392, "Barking Spaulders"),
+        item( 61393, "Barking Vest"),
+        item( 61394, "Barking Gloves"),
+        item( 61395, "Barking Kilt"),
+        item( 61396, "Barking Boots"),
+    }),
+    boss("Scouting Armor", {
+        item( 61405, "Scouting Cap"),
+        item( 61406, "Scouting Spaulders"),
+        item( 61407, "Scouting Tunic"),
+        item( 61408, "Scouting Gloves"),
+        item( 61409, "Scouting Pants"),
+        item( 61410, "Scouting Boots"),
+        item( 61403, "Wrists of Assault"),
+        item( 61399, "Belt of Assault"),
+    }),
+    boss("Ranger Garb", {
+        item( 61419, "Ranger Cap"),
+        item( 61420, "Ranger Mantle"),
+        item( 61421, "Ranger Tunic"),
+        item( 61422, "Ranger Gloves"),
+        item( 61423, "Ranger Pants"),
+        item( 61424, "Ranger Boots"),
+        item( 61418, "Bindings of Assault"),
+        item( 61414, "Cord of Assault"),
+    }),
+    boss("Shockchain Armor", {
+        item( 61425, "Shockchain Coif"),
+        item( 61426, "Shockchain Pauldrons"),
+        item( 61427, "Shockchain Vest"),
+        item( 61428, "Shockchain Gauntlets"),
+        item( 61429, "Shockchain Kilt"),
+        item( 61430, "Shockchain Boots"),
+    }),
+    boss("Capacitor Armor", {
+        item( 61431, "Capacitor Coif"),
+        item( 61432, "Capacitor Pauldrons"),
+        item( 61433, "Capacitor Vest"),
+        item( 61434, "Capacitor Gauntlets"),
+        item( 61435, "Capacitor Kilt"),
+        item( 61436, "Capacitor Boots"),
+    }),
+    boss("Tidal Armor", {
+        item( 61437, "Tidal Coif"),
+        item( 61438, "Tidal Pauldrons"),
+        item( 61439, "Tidal Vest"),
+        item( 61440, "Tidal Gauntlets"),
+        item( 61441, "Tidal Kilt"),
+        item( 61442, "Tidal Boots"),
+    }),
+    boss("Righteous Armor", {
+        item( 61467, "Righteous Helm"),
+        item( 61468, "Righteous Spaulders"),
+        item( 61469, "Righteous Breastplate"),
+        item( 61470, "Righteous Gauntlets"),
+        item( 61471, "Righteous Legplates"),
+        item( 61472, "Righteous Boots"),
+    }),
+    boss("Truthful Armor", {
+        item( 61473, "Truthful Helm"),
+        item( 61474, "Truthful Spaulders"),
+        item( 61475, "Truthful Breastplate"),
+        item( 61476, "Truthful Gauntlets"),
+        item( 61477, "Truthful Legplates"),
+        item( 61478, "Truthful Boots"),
+    }),
+    boss("Plated Battlegear", {
+        item( 61479, "Plated Helm"),
+        item( 61480, "Plated Spaulders"),
+        item( 61481, "Plated Breast"),
+        item( 61482, "Plated Gauntlets"),
+        item( 61483, "Plated Legs"),
+        item( 61484, "Plated Boots"),
+    }),
+}, "set")
+
+-- =====================================================================
+zone("World Epics", {
+    boss("Cloth & Armor", {
+        item(   867, "Gloves of Holy Might"),
+        item(  1981, "Icemail Jerkin"),
+        item(  1980, "Underworld Band"),
+        item( 60799, "Satyr's Grimoire"),
+        item( 60802, "Umbral Frostcloak"),
+        item(  3075, "Eye of Flame"),
+        item(   940, "Robes of Insight"),
+        item( 14551, "Edgemaster's Handguards"),
+        item( 17007, "Stonerender Gauntlets"),
+        item( 14549, "Boots of Avoidance"),
+        item(  1315, "Lei of Lilies"),
+        item(   942, "Freezing Band"),
+        item(  1447, "Ring of Saviors"),
+        item( 60803, "Windshear Cloak"),
+        item( 60804, "Stalkerhide Jerkin"),
+        item( 60807, "Ancient Highborne Vestments"),
+        item( 60808, "Band of Restoration"),
+        item( 60811, "Sigil of Lordaeron"),
+        item( 60813, "Cinderflux Tunic"),
+        item( 60817, "Ironbark Chestplate"),
+        item(  1443, "Jeweled Amulet of Cainwyn"),
+        item(  2245, "Helm of Narv"),
+        item(  2246, "Myrmidon's Signet"),
+        item(   833, "Lifestone"),
+        item( 14552, "Stockade Pauldrons"),
+        item(  3475, "Cloak of Flames"),
+        item( 14558, "Lady Maye's Pendant"),
+        item( 14557, "The Lion Horn of Stormwind"),
+        item( 14554, "Cloudkeeper Legplates"),
+        item( 60819, "Kirin Tor Skeleton Key"),
+        item( 14553, "Sash of Mercy"),
+    }),
+    boss("Weapons", {
+        item(   869, "Dazzling Longsword"),
+        item(  1982, "Nightblade"),
+        item(   870, "Fiery War Axe"),
+        item(   868, "Ardent Custodian"),
+        item(   873, "Staff of Jordan"),
+        item(  1204, "The Green Tower"),
+        item(  2825, "Bow of Searing Arrows"),
+        item( 60798, "Knightsblade"),
+        item( 60800, "Formidable Dagger"),
+        item( 60801, "Fleshrender"),
+        item(  2164, "Gut Ripper"),
+        item(  2163, "Shadowblade"),
+        item(   809, "Bloodrazor"),
+        item(   871, "Flurry Axe"),
+        item(  2291, "Kang the Decapitator"),
+        item(   810, "Hammer of the Northern Wind"),
+        item(  2915, "Taran Icebreaker"),
+        item(   812, "Glowing Brightwood Staff"),
+        item(   943, "Warden Staff"),
+        item(  1169, "Blackskull Shield"),
+        item(  1979, "Wall of the Dead"),
+        item(  2824, "Hurricane"),
+        item(  2100, "Precisely Calibrated Boomstick"),
+        item( 60805, "Spellcarved Blade"),
+        item( 60806, "Lightwarden's Bulwark"),
+        item( 60809, "Frostwake"),
+        item( 60810, "Stormtouch"),
+        item(  1263, "Brain Hacker"),
+        item( 60816, "Verdant Benediction"),
+        item(  1168, "Skullflame Shield"),
+        item( 60815, "Huntsman's Pike"),
+        item(  2099, "Dwarven Hand Cannon"),
+        item( 60814, "Skullbore"),
+        item(   647, "Destiny"),
+        item(   811, "Axe of the Deep Woods"),
+        item(  2244, "Krol Blade"),
+        item( 60812, "Blessed Quarrelcaster"),
+        item(  1728, "Teebu's Blazing Longsword"),
+        item( 60821, "Starwell"),
+        item( 60820, "Obsidian Halberd"),
+        item(  2801, "Blade of Hanna"),
+        item( 14555, "Alcor's Sunrazor"),
+        item(  2243, "Hand of Edward the Odd"),
+        item(   944, "Elemental Mage Staff"),
+        item( 60818, "Stormhowler"),
+    }),
+}, "set")
