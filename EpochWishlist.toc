@@ -1,0 +1,9 @@
+## Interface: 30300
+## Title: |cffFFD700Epoch|r |cffC0C0C0Wishlist|r
+## Notes: Multi-list gear wishlist for Project Epoch. No external libraries required.
+## Author: Coconut
+## Version: 2.0.0
+## SavedVariables: EpochWishlistDB
+
+EpochWishlist_Items.lua
+EpochWishlist.lua
